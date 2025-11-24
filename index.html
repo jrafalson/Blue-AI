@@ -1,0 +1,3987 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blue Origin - AI Manufacturing Strategy</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    
+    <!-- Three.js Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    
+    <!-- Chart.js Library -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        /* --- UNIFIED COLOR SYSTEM --- */
+        :root {
+            /* Brand Colors */
+            --blue-origin: #0055FF;
+            --blue-dark: #0044CC;
+            --blue-glow: #00D4FF;
+            
+            /* Status Colors */
+            --status-success: #51CF66; /* Green */
+            --status-warning: #FF922B; /* Orange */
+            --status-danger: #FF6B6B;  /* Red */
+            --status-purple: #B197FC;  /* For Generative/AI */
+            
+            /* Backgrounds */
+            --bg-deep: #050505;
+            --bg-panel: #0F0F15;
+            --bg-card: rgba(255, 255, 255, 0.03);
+            --border-light: rgba(255, 255, 255, 0.12);
+            
+            /* Text */
+            --text-main: #FFFFFF;
+            --text-muted: #9CA3AF;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-deep);
+            color: var(--text-main);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* --- 1. BACKGROUND --- */
+        .starfield-background {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;
+            background: 
+                radial-gradient(1px 1px at 20% 30%, white, transparent),
+                radial-gradient(2px 2px at 50% 50%, rgba(255,255,255,0.8), transparent),
+                radial-gradient(1px 1px at 80% 10%, white, transparent),
+                radial-gradient(1px 1px at 10% 90%, rgba(255,255,255,0.6), transparent);
+            background-size: 550px 550px;
+            background-color: #000;
+            opacity: 0.6;
+        }
+
+        /* --- 2. HEADER --- */
+        .header {
+            position: fixed; top: 0; left: 0; right: 0; height: 70px;
+            background: rgba(5, 5, 12, 0.9); backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-light); z-index: 1000;
+        }
+        .header-container {
+            max-width: 1400px; margin: 0 auto; height: 100%;
+            display: flex; align-items: center; justify-content: space-between; padding: 0 20px;
+        }
+        .logo-text {
+            font-weight: 800; letter-spacing: 2px; font-size: 1.2rem; cursor: pointer; color: white;
+            text-transform: uppercase;
+        }
+        .tab-nav { display: flex; gap: 5px; height: 100%; }
+        .tab-button {
+            background: transparent; border: none; color: var(--text-muted);
+            font-family: 'Inter', sans-serif; font-size: 0.8rem; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.5px; padding: 0 15px;
+            height: 100%; cursor: pointer; border-bottom: 3px solid transparent;
+            transition: all 0.2s ease;
+        }
+        .tab-button:hover { color: var(--text-main); background: rgba(255,255,255,0.05); }
+        .tab-button.active { color: var(--text-main); border-bottom-color: var(--blue-glow); }
+
+        /* --- 3. HERO & LAYOUT --- */
+        .tab-content { display: none; padding-top: 70px; animation: fadeIn 0.6s ease; }
+        .tab-content.active { display: block; }
+
+        .hero {
+            min-height: 100vh; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; text-align: center;
+            position: relative; overflow: hidden;
+        }
+        .hero-visual-container { width: 100%; height: 60vh; position: relative; z-index: 1; }
+        #earth-container { width: 100%; height: 100%; cursor: grab; }
+        #earth-container:active { cursor: grabbing; }
+
+        #loading-spinner {
+            position: absolute; top: 50%; left: 50%; width: 50px; height: 50px;
+            border: 3px solid rgba(255,255,255,0.1); border-top-color: var(--blue-glow);
+            border-radius: 50%; transform: translate(-50%, -50%);
+            animation: spin 1s infinite linear; z-index: 2;
+        }
+
+        .hero-content { position: relative; z-index: 2; padding: 0 20px; margin-top: -40px; }
+        .hero h1 {
+            font-size: 4rem; font-weight: 800; letter-spacing: 6px;
+            background: linear-gradient(135deg, #FFFFFF, var(--blue-origin));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            margin-bottom: 10px; text-transform: uppercase;
+        }
+        .hero h2 {
+            font-size: 1.2rem; font-weight: 300; color: var(--text-muted);
+            margin-bottom: 2rem; max-width: 700px; margin-left: auto; margin-right: auto;
+        }
+        .hero-meta { font-size: 0.9rem; color: var(--text-muted); opacity: 0.8; }
+
+        .scroll-indicator {
+            position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
+            display: flex; flex-direction: column; align-items: center;
+            cursor: pointer; opacity: 0.7; transition: opacity 0.3s; z-index: 5;
+        }
+        .scroll-indicator:hover { opacity: 1; }
+        .scroll-indicator span { font-size: 0.7rem; letter-spacing: 2px; margin-bottom: 8px; color: var(--blue-glow); }
+        .arrow-down {
+            width: 10px; height: 10px; border-right: 2px solid var(--blue-glow);
+            border-bottom: 2px solid var(--blue-glow); transform: rotate(45deg);
+            animation: bounce 2s infinite;
+        }
+
+        .container { max-width: 1200px; margin: 0 auto; padding: 4rem 2rem; }
+        
+        .section-header { text-align: center; margin: 3rem 0; }
+        .section-header h2 { font-size: 2rem; text-transform: uppercase; letter-spacing: 3px; margin-bottom: 0.5rem; }
+
+        /* Overview Tab: Clean Blue/White Style */
+        .overview-clean-card {
+            background: var(--bg-card); border: 1px solid var(--border-light);
+            border-left: 4px solid var(--blue-origin); padding: 2.5rem;
+            border-radius: 8px; margin-bottom: 2rem;
+        }
+        .overview-clean-card h3 { color: #FFFFFF; margin-bottom: 1rem; font-size: 1.5rem; font-weight: 700; }
+        .overview-clean-card p { color: var(--text-main); opacity: 0.9; font-size: 1.05rem; line-height: 1.7; margin-bottom: 1rem; }
+        .overview-clean-card ul { padding-left: 1.5rem; color: var(--text-muted); margin-top: 1rem; }
+        .overview-clean-card ul li { margin-bottom: 0.5rem; }
+
+        /* Strategy Tabs: Semantic Color Coding */
+        .problem-card {
+            background: var(--bg-card); border: 1px solid var(--border-light);
+            border-left: 4px solid var(--status-warning); padding: 2.5rem;
+            border-radius: 8px; margin-bottom: 2rem;
+        }
+        .problem-card h3 { color: var(--status-warning); margin-bottom: 1rem; font-size: 1.5rem; font-weight: 700; }
+        
+        .solution-card {
+            background: var(--bg-card); border: 1px solid var(--border-light);
+            border-left: 4px solid var(--status-success); padding: 2.5rem;
+            border-radius: 8px; margin-bottom: 2rem;
+        }
+        .solution-card h3 { color: var(--status-success); margin-bottom: 1rem; font-size: 1.5rem; font-weight: 700; }
+
+        .card-text { color: var(--text-muted); font-size: 1.05rem; line-height: 1.7; margin-bottom: 1rem; }
+        .card-list { padding-left: 1.5rem; color: var(--text-muted); margin-top: 1rem; }
+        .card-list li { margin-bottom: 0.5rem; }
+
+        /* Initiative Grid - FIXED 2x2 Layout */
+        .initiative-grid { 
+            display: grid; 
+            grid-template-columns: repeat(2, 1fr); 
+            gap: 2rem; 
+            margin-top: 2rem; 
+        }
+        .initiative-card {
+            background: linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+            border: 1px solid var(--border-light); padding: 2rem; border-radius: 12px;
+            cursor: pointer; transition: all 0.3s ease; position: relative; overflow: hidden;
+            display: flex; flex-direction: column;
+        }
+        .initiative-card:hover { transform: translateY(-5px); border-color: var(--blue-glow); background: rgba(255,255,255,0.05); }
+        .initiative-card h3 { font-size: 1.2rem; margin-bottom: 1rem; font-weight: 700; color: var(--text-main); }
+        .initiative-card p { font-size: 0.95rem; color: var(--text-muted); margin-bottom: 1.5rem; flex-grow: 1; }
+        
+        .metric-pill {
+            display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600;
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); width: fit-content;
+        }
+        .metric-pill.primary { color: var(--blue-glow); border-color: var(--blue-glow); background: rgba(0, 212, 255, 0.1); }
+        .metric-pill.warning { color: var(--status-warning); border-color: var(--status-warning); background: rgba(255, 146, 43, 0.1); }
+        .metric-pill.success { color: var(--status-success); border-color: var(--status-success); background: rgba(81, 207, 102, 0.1); }
+        .metric-pill.purple { color: var(--status-purple); border-color: var(--status-purple); background: rgba(177, 151, 252, 0.1); }
+
+        .page-header {
+            padding: 5rem 2rem 3rem; text-align: center;
+            background: linear-gradient(to bottom, rgba(0,85,255,0.1), transparent);
+            border-bottom: 1px solid var(--border-light);
+        }
+        .page-header h1 { font-size: 2.5rem; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 2px; }
+        .tagline { color: var(--blue-glow); font-size: 1.2rem; max-width: 800px; margin: 0 auto; }
+
+        /* --- 5. VISUALS & DASHBOARDS --- */
+        .visual-box {
+            background: var(--bg-panel); border: 1px solid var(--border-light);
+            border-radius: 12px; padding: 2rem; margin-top: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        /* Competitor Grid */
+        .competitor-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin-top: 1.5rem; }
+        .competitor-card { background: var(--bg-card); padding: 1.5rem; border-radius: 8px; border: 1px solid var(--border-light); }
+        .competitor-card h4 { margin-bottom: 0.5rem; color: var(--text-main); font-weight: 700; }
+        .competitor-card.spacex { border-left: 4px solid #CCCCCC; }
+        .competitor-card.boeing { border-left: 4px solid #0039A6; }
+        .competitor-card.ula { border-left: 4px solid #CE1126; }
+        .competitor-card.airbus { border-left: 4px solid #0055FF; }
+        .competitor-card.westinghouse { border-left: 4px solid #FFD700; }
+
+        /* --- OPTION 1: UNIFIED DATA VISUALIZATION --- */
+        .unified-demo-container {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-light);
+            border-radius: 12px;
+            padding: 2.5rem;
+            margin-top: 2rem;
+        }
+
+        .query-section {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            margin-bottom: 3rem;
+        }
+
+        .query-box {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.4);
+            border: 2px solid var(--border-light);
+            border-radius: 8px;
+            padding: 1.2rem 1.5rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1rem;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            transition: border-color 0.3s;
+        }
+
+        .query-box.active {
+            border-color: var(--blue-glow);
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.2);
+        }
+
+        .query-prompt {
+            color: var(--blue-glow);
+            margin-right: 0.5rem;
+        }
+
+        .query-text {
+            color: var(--text-main);
+        }
+
+        .cursor {
+            color: var(--blue-glow);
+            animation: blink 1s infinite;
+            margin-left: 2px;
+        }
+
+        @keyframes blink {
+            0%, 49% { opacity: 1; }
+            50%, 100% { opacity: 0; }
+        }
+
+        .search-button {
+            background: var(--blue-origin);
+            color: white;
+            border: none;
+            padding: 1.2rem 2.5rem;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .search-button:hover:not(:disabled) {
+            background: var(--blue-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 85, 255, 0.4);
+        }
+
+        .search-button:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .search-button.searching {
+            background: var(--blue-glow);
+            animation: pulse 1.5s infinite;
+        }
+
+        .data-sources-network {
+            position: relative;
+            min-height: 300px;
+            margin-bottom: 2rem;
+        }
+
+        .connection-svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .source-node {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.03);
+            border: 2px solid var(--border-light);
+            border-radius: 12px;
+            padding: 1.5rem;
+            min-width: 140px;
+            text-align: center;
+            transition: all 0.3s;
+            z-index: 2;
+        }
+
+        .source-node.searching {
+            border-color: var(--blue-glow);
+            background: rgba(0, 212, 255, 0.1);
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+            animation: nodeSearch 1.5s ease-in-out;
+        }
+
+        @keyframes nodeSearch {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .source-node.found {
+            border-color: var(--status-success);
+            background: rgba(81, 207, 102, 0.1);
+        }
+
+        .node-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .node-label {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--text-main);
+            margin-bottom: 0.3rem;
+        }
+
+        .node-status {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .results-panel {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-light);
+            border-radius: 8px;
+            padding: 1.5rem;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s;
+        }
+
+        .results-panel.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .results-header h4 {
+            margin: 0;
+            color: var(--blue-glow);
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+        }
+
+        .results-meta {
+            display: flex;
+            gap: 1.5rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+        }
+
+        .result-count {
+            color: var(--status-success);
+            font-weight: 700;
+        }
+
+        .result-time {
+            color: var(--text-muted);
+        }
+
+        .results-content {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .result-placeholder {
+            text-align: center;
+            color: var(--text-muted);
+            padding: 2rem;
+            font-style: italic;
+        }
+
+        .result-item {
+            background: rgba(255, 255, 255, 0.02);
+            border-left: 3px solid var(--blue-origin);
+            padding: 1rem;
+            border-radius: 4px;
+            opacity: 0;
+            transform: translateX(-20px);
+        }
+
+        .result-item.show {
+            animation: resultAppear 0.5s ease forwards;
+        }
+
+        @keyframes resultAppear {
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .result-source {
+            display: inline-block;
+            font-size: 0.75rem;
+            color: var(--blue-glow);
+            background: rgba(0, 212, 255, 0.1);
+            padding: 3px 8px;
+            border-radius: 3px;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .result-text {
+            color: var(--text-main);
+            line-height: 1.6;
+            font-size: 0.9rem;
+        }
+
+        .result-date {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            margin-top: 0.5rem;
+        }
+
+        /* --- OPTION 2: REBUILT SUPPLY CHAIN DASHBOARD --- */
+        .supply-chain-dashboard-container {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-light);
+            border-radius: 12px;
+            padding: 0;
+            margin-top: 2rem;
+            overflow: hidden;
+        }
+
+        .dashboard-header-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem 2rem;
+            background: linear-gradient(135deg, rgba(0, 45, 98, 0.4), rgba(0, 60, 130, 0.2));
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .header-left h3 {
+            margin: 0;
+            font-size: 1.4rem;
+            color: var(--text-main);
+        }
+
+        .live-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--status-success);
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .status-dot.live {
+            background: var(--status-success);
+            animation: livePulse 2s infinite;
+        }
+
+        @keyframes livePulse {
+            0%, 100% { box-shadow: 0 0 0 0 var(--status-success); }
+            50% { box-shadow: 0 0 0 6px rgba(81, 207, 102, 0); }
+        }
+
+        .alert-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 18px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .alert-badge.critical {
+            background: rgba(255, 107, 107, 0.15);
+            border: 1px solid var(--status-danger);
+            color: var(--status-danger);
+        }
+
+        .alert-icon {
+            font-size: 1rem;
+        }
+
+        /* KPI Cards Row */
+        .kpi-cards-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            padding: 2rem;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .kpi-card {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-light);
+            border-radius: 10px;
+            padding: 1.2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .kpi-icon-simple {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .kpi-content {
+            flex: 1;
+        }
+
+        .kpi-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
+        }
+
+        .kpi-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-main);
+            font-family: 'JetBrains Mono', monospace;
+            line-height: 1;
+        }
+
+        .kpi-value.warning { color: var(--status-warning); }
+        .kpi-value.danger { color: var(--status-danger); }
+        .kpi-value.success { color: var(--status-success); }
+
+        .kpi-unit {
+            font-size: 1rem;
+            color: var(--text-muted);
+            font-weight: 400;
+        }
+
+        .kpi-description {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+            margin-top: 0.4rem;
+            font-style: italic;
+        }
+
+        .kpi-change {
+            font-size: 0.75rem;
+            margin-top: 0.3rem;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .kpi-change.positive {
+            color: var(--status-success);
+        }
+
+        .kpi-change.positive::before {
+            content: '↑ ';
+        }
+
+        .kpi-change.negative {
+            color: var(--status-danger);
+        }
+
+        .kpi-change.negative::before {
+            content: '↓ ';
+        }
+
+        .kpi-sparkline,
+        .kpi-mini-stat {
+            margin-top: auto;
+        }
+
+        .mini-stat-item {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.7rem;
+            padding: 0.4rem 0;
+            border-top: 1px solid var(--border-light);
+        }
+
+        .mini-label {
+            color: var(--text-muted);
+        }
+
+        .mini-value {
+            color: var(--text-main);
+            font-weight: 600;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Main Dashboard Grid */
+        .dashboard-main-grid {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 2rem;
+            padding: 2rem;
+        }
+
+        .dashboard-left-col,
+        .dashboard-right-col {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .dashboard-panel {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-light);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .panel-header-new {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.2rem 1.5rem;
+            background: rgba(0, 0, 0, 0.3);
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .panel-title-group h4 {
+            margin: 0;
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            color: var(--blue-glow);
+            letter-spacing: 0.5px;
+        }
+
+        .panel-subtitle {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            display: block;
+            margin-top: 0.3rem;
+            font-weight: 400;
+        }
+
+        .simulate-btn {
+            background: linear-gradient(135deg, rgba(255, 107, 107, 0.2), rgba(255, 146, 43, 0.2));
+            border: 1px solid var(--status-danger);
+            color: var(--status-danger);
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.3s;
+        }
+
+        .simulate-btn:hover {
+            background: linear-gradient(135deg, rgba(255, 107, 107, 0.3), rgba(255, 146, 43, 0.3));
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+        }
+
+        .btn-icon {
+            font-size: 1rem;
+        }
+
+        /* Network Visualization */
+        .network-viz-container {
+            padding: 1.5rem;
+            background: radial-gradient(circle at center, rgba(0, 45, 98, 0.1), transparent);
+        }
+
+        #networkSVG {
+            display: block;
+        }
+
+        .network-legend {
+            padding: 1rem 1.5rem;
+            background: rgba(0, 0, 0, 0.2);
+            border-top: 1px solid var(--border-light);
+        }
+
+        .legend-row {
+            display: flex;
+            gap: 2rem;
+            justify-content: center;
+        }
+
+        .legend-item-new {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .health-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .health-indicator.healthy {
+            background: var(--status-success);
+            box-shadow: 0 0 8px var(--status-success);
+        }
+
+        .health-indicator.warning {
+            background: var(--status-warning);
+            box-shadow: 0 0 8px var(--status-warning);
+        }
+
+        .health-indicator.critical {
+            background: var(--status-danger);
+            box-shadow: 0 0 8px var(--status-danger);
+            animation: criticalPulse 1.5s infinite;
+        }
+
+        @keyframes criticalPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        /* Heat Map */
+        .heatmap-container {
+            padding: 1.5rem;
+        }
+
+        .heatmap-axes {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            padding: 0.5rem 1.5rem 1rem;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .axis-label-y {
+            text-align: right;
+        }
+
+        /* Chart Explainer */
+        .chart-explainer {
+            display: flex;
+            gap: 0.8rem;
+            padding: 1rem 1.5rem;
+            background: rgba(0, 212, 255, 0.05);
+            border-top: 1px solid var(--border-light);
+            border-bottom: 1px solid var(--border-light);
+            align-items: flex-start;
+        }
+
+        .explainer-icon {
+            font-size: 1.2rem;
+            line-height: 1;
+            flex-shrink: 0;
+        }
+
+        .explainer-text {
+            font-size: 0.75rem;
+            line-height: 1.6;
+            color: var(--text-main);
+        }
+
+        .explainer-text strong {
+            color: var(--blue-glow);
+            font-weight: 700;
+        }
+
+        /* Forecast Container */
+        .forecast-container {
+            padding: 1.5rem;
+        }
+
+        .forecast-insights {
+            padding: 1rem 1.5rem;
+            background: rgba(0, 0, 0, 0.2);
+            border-top: 1px solid var(--border-light);
+        }
+
+        .insight-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 14px;
+            background: rgba(255, 146, 43, 0.1);
+            border: 1px solid var(--status-warning);
+            border-radius: 20px;
+            font-size: 0.75rem;
+            color: var(--status-warning);
+        }
+
+        .chip-icon {
+            font-size: 0.9rem;
+        }
+
+        /* Parts List */
+        .parts-list-container {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .parts-list-header {
+            display: grid;
+            grid-template-columns: 2fr 1.5fr 0.7fr 1fr;
+            gap: 1rem;
+            padding: 1rem 1.5rem;
+            background: rgba(0, 0, 0, 0.3);
+            border-bottom: 1px solid var(--border-light);
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+            font-weight: 700;
+        }
+
+        .parts-list-scrollable {
+            max-height: 280px;
+            overflow-y: auto;
+        }
+
+        .part-row {
+            display: grid;
+            grid-template-columns: 2fr 1.5fr 0.7fr 1fr;
+            gap: 1rem;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            transition: background 0.2s;
+        }
+
+        .part-row:hover {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .part-row.critical-row {
+            background: rgba(255, 107, 107, 0.05);
+            border-left: 3px solid var(--status-danger);
+        }
+
+        .part-row.warning-row {
+            background: rgba(255, 146, 43, 0.05);
+            border-left: 3px solid var(--status-warning);
+        }
+
+        .col-part {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .part-number {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            color: var(--blue-glow);
+            font-weight: 600;
+        }
+
+        .part-name {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .supplier-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-light);
+            border-radius: 4px;
+            font-size: 0.75rem;
+            color: var(--text-main);
+        }
+
+        .risk-score {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 42px;
+            height: 42px;
+            border-radius: 6px;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            font-size: 0.95rem;
+        }
+
+        .risk-score.critical {
+            background: rgba(255, 107, 107, 0.2);
+            border: 2px solid var(--status-danger);
+            color: var(--status-danger);
+        }
+
+        .risk-score.warning {
+            background: rgba(255, 146, 43, 0.2);
+            border: 2px solid var(--status-warning);
+            color: var(--status-warning);
+        }
+
+        .risk-score.moderate {
+            background: rgba(0, 212, 255, 0.1);
+            border: 2px solid var(--blue-glow);
+            color: var(--blue-glow);
+        }
+
+        .action-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .action-badge.sourcing {
+            background: rgba(255, 107, 107, 0.2);
+            color: var(--status-danger);
+        }
+
+        .action-badge.monitoring {
+            background: rgba(255, 146, 43, 0.2);
+            color: var(--status-warning);
+        }
+
+        .action-badge.expedite {
+            background: rgba(0, 212, 255, 0.2);
+            color: var(--blue-glow);
+        }
+
+        .action-badge.stable {
+            background: rgba(81, 207, 102, 0.2);
+            color: var(--status-success);
+        }
+
+        /* AI Recommendation Panel */
+        .ai-recommendation-panel {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.05), rgba(0, 45, 98, 0.1));
+            border: 1px solid var(--blue-glow);
+        }
+
+        .ai-recommendation-content {
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+        }
+
+        .recommendation-primary {
+            padding: 1rem;
+            background: rgba(255, 107, 107, 0.1);
+            border-left: 3px solid var(--status-danger);
+            border-radius: 6px;
+        }
+
+        .recommendation-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--status-danger);
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .recommendation-text {
+            font-size: 0.85rem;
+            line-height: 1.6;
+            color: var(--text-main);
+        }
+
+        .recommendation-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        .action-option {
+            padding: 1rem;
+            border-radius: 6px;
+            border: 1px solid var(--border-light);
+            background: rgba(255, 255, 255, 0.02);
+            transition: all 0.3s;
+        }
+
+        .action-option:hover {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: var(--blue-glow);
+        }
+
+        .action-option.primary {
+            border-color: var(--status-success);
+            background: rgba(81, 207, 102, 0.05);
+        }
+
+        .option-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.6rem;
+        }
+
+        .option-title {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .option-confidence {
+            font-size: 0.7rem;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text-muted);
+        }
+
+        .option-metrics {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .option-metrics .metric {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* --- OPTION 3: MISSION CONTROL INSPECTION DASHBOARD --- */
+        .inspection-dashboard-container {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-light);
+            border-radius: 12px;
+            overflow: hidden;
+            margin-top: 2rem;
+        }
+
+        .inspection-header-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem 2rem;
+            background: linear-gradient(135deg, rgba(0, 45, 98, 0.4), rgba(0, 60, 130, 0.2));
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .header-left-group h3 {
+            margin: 0 0 0.5rem 0;
+            font-size: 1.4rem;
+            color: var(--text-main);
+        }
+
+        .vehicle-info {
+            display: flex;
+            align-items: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--blue-glow);
+            font-weight: 600;
+        }
+
+        .analysis-status-badge {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 20px;
+            background: rgba(0, 212, 255, 0.1);
+            border: 1px solid var(--blue-glow);
+            border-radius: 20px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            color: var(--blue-glow);
+        }
+
+        .status-pulse {
+            width: 10px;
+            height: 10px;
+            background: var(--blue-glow);
+            border-radius: 50%;
+            animation: statusPulse 2s infinite;
+        }
+
+        .analysis-status-badge.scanning {
+            border-color: var(--status-warning);
+            background: rgba(255, 146, 43, 0.1);
+            color: var(--status-warning);
+        }
+
+        .analysis-status-badge.scanning .status-pulse {
+            background: var(--status-warning);
+            animation: statusBlink 0.8s infinite;
+        }
+
+        .analysis-status-badge.complete {
+            border-color: var(--status-success);
+            background: rgba(81, 207, 102, 0.1);
+            color: var(--status-success);
+        }
+
+        .analysis-status-badge.complete .status-pulse {
+            background: var(--status-success);
+            animation: none;
+        }
+
+        @keyframes statusBlink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.2; }
+        }
+
+        /* Main Grid Layout - UPDATED for Full Height and Better Layout */
+        .inspection-grid {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr;
+            gap: 0;
+            min-height: 850px; /* Ensuring ample height for the verdict panel */
+            border-top: 1px solid var(--border-light);
+        }
+
+        /* LEFT: Scan Visual Panel */
+        .scan-visual-panel {
+            background: radial-gradient(circle at center, rgba(0, 45, 98, 0.2), rgba(0,0,0,0.4));
+            border-right: 1px solid var(--border-light);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .scan-panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            background: rgba(0, 0, 0, 0.4);
+            border-bottom: 1px solid var(--border-light);
+            z-index: 10;
+        }
+
+        .panel-title {
+            font-size: 0.85rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            color: var(--blue-glow);
+            text-transform: uppercase;
+        }
+
+        .sensor-mode-toggle {
+            display: flex;
+            gap: 6px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 4px;
+            border-radius: 6px;
+            border: 1px solid var(--border-light);
+        }
+
+        .mode-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: transparent;
+            border: 1px solid transparent;
+            border-radius: 4px;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .mode-btn:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-main);
+        }
+
+        .mode-btn.active {
+            background: rgba(0, 212, 255, 0.2);
+            border-color: var(--blue-glow);
+            color: var(--blue-glow);
+        }
+
+        .scan-viewport {
+            position: relative;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            overflow: hidden;
+            background: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHBhdGggZD0iTTE5IDB2MWgxdi0xeiIgZmlsbD0icmdiYSgwLDIxMiwyNTUsMC4xKSIgLz48L3N2Zz4=');
+        }
+
+        /* Rocket SVG styling */
+        .rocket-visualization {
+            height: 90%;
+            max-width: 100%;
+            filter: drop-shadow(0 0 20px rgba(0, 85, 255, 0.2));
+        }
+
+        /* Inspection Zones - Updated to match image boxes */
+        .inspection-zone rect {
+            fill: rgba(0,0,0,0.2);
+            stroke-width: 2px;
+            transition: all 0.3s;
+        }
+        
+        .inspection-zone text {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Heat Shield: Orange Box */
+        #zone-heat-shield rect { stroke: var(--status-warning); }
+        #zone-heat-shield.active rect { fill: rgba(255, 146, 43, 0.15); box-shadow: 0 0 15px var(--status-warning); }
+
+        /* Fuel Tank: Green Box */
+        #zone-fuel-tank rect { stroke: var(--status-success); }
+        #zone-fuel-tank.active rect { fill: rgba(81, 207, 102, 0.15); }
+
+        /* Avionics: Blue/Cyan Box */
+        #zone-avionics rect { stroke: var(--blue-glow); }
+        #zone-avionics.active rect { fill: rgba(0, 212, 255, 0.15); }
+
+        /* Engine Mount: Red/Pink Box */
+        #zone-engine-mount rect { stroke: var(--status-danger); }
+        #zone-engine-mount.active rect { fill: rgba(255, 107, 107, 0.15); }
+
+        /* Dynamic colors based on sensor mode */
+        .mode-visual .rocket-outline { stroke: rgba(0, 212, 255, 0.3); }
+        .mode-thermal .rocket-outline { stroke: rgba(255, 146, 43, 0.3); }
+        .mode-ultrasonic .rocket-outline { stroke: rgba(81, 207, 102, 0.3); }
+
+        .mode-visual .scan-beam-horizontal { stroke: var(--blue-glow); }
+        .mode-thermal .scan-beam-horizontal { stroke: var(--status-warning); }
+        .mode-ultrasonic .scan-beam-horizontal { stroke: var(--status-success); }
+
+        .defect-marker {
+            animation: pulseMarker 1.5s infinite;
+        }
+        
+        @keyframes pulseMarker {
+            0% { opacity: 0.6; stroke-width: 2px; }
+            50% { opacity: 1; stroke-width: 4px; }
+            100% { opacity: 0.6; stroke-width: 2px; }
+        }
+        
+        .scan-line {
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(to right, transparent 0%, var(--blue-glow) 50%, transparent 100%);
+            box-shadow: 0 0 10px var(--blue-glow);
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .scan-active .scan-line {
+            opacity: 0.8;
+            animation: scanLoop 3s linear infinite;
+        }
+
+        @keyframes scanLoop {
+            0% { top: 0%; }
+            100% { top: 100%; }
+        }
+
+        .scan-stats-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(5px);
+            border-top: 1px solid var(--border-light);
+            padding: 15px 25px;
+            gap: 3rem;
+        }
+
+        .stat-item-overlay {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stat-label-overlay {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .stat-value-overlay {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--blue-glow);
+        }
+
+
+        /* RIGHT: Telemetry Dashboard - Stacked Layout */
+        .telemetry-dashboard {
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-panel);
+            border-left: 1px solid var(--border-light);
+            height: 100%; /* Fill height */
+        }
+
+        /* 1. Metrics Row */
+        .metrics-row-top {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            border-bottom: 1px solid var(--border-light);
+            background: rgba(0,0,0,0.2);
+        }
+
+        .metric-box {
+            padding: 1.5rem;
+            text-align: center;
+            border-right: 1px solid var(--border-light);
+        }
+        .metric-box:last-child { border-right: none; }
+
+        .metric-label-dash {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-value-dash {
+            font-size: 2.2rem;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+            line-height: 1;
+            margin-bottom: 0.2rem;
+        }
+        .metric-value-dash.danger { color: var(--status-danger); }
+        .metric-value-dash.blue { color: var(--blue-glow); }
+        .metric-value-dash.success { color: var(--status-success); }
+
+        .metric-unit-dash {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        /* 2. Zone Status List */
+        .zone-status-panel {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .panel-header-dash {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .panel-title-dash {
+            color: var(--blue-glow);
+            font-size: 0.85rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .panel-subtitle-dash {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+
+        .zone-status-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        .zone-status-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-light);
+            border-radius: 6px;
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .status-dot-large {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        .status-dot-large.warning { background: var(--status-warning); box-shadow: 0 0 8px var(--status-warning); }
+        .status-dot-large.success { background: var(--status-success); box-shadow: 0 0 8px var(--status-success); }
+        .status-dot-large.pending { background: #333; }
+
+        .zone-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .zone-title {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--text-main);
+        }
+
+        .zone-desc {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* 3. Defect Feed */
+        .defect-feed-panel {
+            flex: 1; /* Expand to fill space */
+            display: flex;
+            flex-direction: column;
+            border-bottom: 1px solid var(--border-light);
+            min-height: 200px;
+        }
+
+        .live-tag {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--status-danger);
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+        .live-dot-anim {
+            width: 6px;
+            height: 6px;
+            background: var(--status-danger);
+            border-radius: 50%;
+            animation: livePulse 1.5s infinite;
+        }
+
+        .defect-feed-content {
+            flex: 1;
+            padding: 1rem 1.5rem;
+            overflow-y: auto;
+            background: rgba(0,0,0,0.2);
+        }
+
+        .feed-item {
+            background: rgba(255, 107, 107, 0.1);
+            border-left: 3px solid var(--status-danger);
+            padding: 1rem;
+            margin-bottom: 0.8rem;
+            border-radius: 0 4px 4px 0;
+        }
+        
+        .feed-header {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            margin-bottom: 0.5rem;
+            color: var(--text-main);
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .feed-body {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+            margin-bottom: 0.5rem;
+        }
+
+        .feed-time {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+            opacity: 0.7;
+        }
+
+        /* 4. Verdict Panel - Fixed at bottom */
+        .verdict-panel {
+            padding: 1.5rem;
+            background: rgba(0, 212, 255, 0.05);
+            border-top: 1px solid var(--blue-glow);
+            min-height: 150px;
+        }
+
+        .verdict-title {
+            color: var(--blue-glow);
+            font-weight: 700;
+            font-size: 0.9rem;
+            margin-bottom: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .verdict-text {
+            color: var(--text-main);
+            font-size: 0.85rem;
+            line-height: 1.6;
+        }
+
+
+        /* --- GENERATIVE AI VISUALIZATION --- */
+        .gen-ai-container {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-light);
+            border-radius: 12px;
+            padding: 2.5rem;
+            margin-top: 2rem;
+        }
+
+        .gen-ai-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .gen-ai-header h3 {
+            margin: 0;
+            font-size: 1.5rem;
+            color: var(--text-main);
+        }
+
+        .gen-status-badge {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 16px;
+            background: rgba(0, 212, 255, 0.1);
+            border: 1px solid var(--blue-glow);
+            border-radius: 20px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            letter-spacing: 1px;
+            color: var(--blue-glow);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--blue-glow);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .constraints-panel {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-light);
+            border-left: 3px solid var(--blue-origin);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+        }
+
+        .constraints-panel h4 {
+            color: var(--blue-glow);
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            margin-bottom: 1rem;
+            letter-spacing: 1px;
+        }
+
+        .constraint-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.6rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 0.9rem;
+        }
+
+        .constraint-item:last-child {
+            border-bottom: none;
+        }
+
+        .constraint-label {
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .constraint-value {
+            color: var(--text-main);
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600;
+        }
+
+        .design-candidates-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .design-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-light);
+            border-radius: 8px;
+            padding: 1.5rem;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+        }
+
+        .design-card.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .design-card.winner {
+            border-color: var(--status-success);
+            box-shadow: 0 0 20px rgba(81, 207, 102, 0.2);
+            background: rgba(81, 207, 102, 0.05);
+        }
+
+        .design-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .design-header h4 {
+            margin: 0;
+            font-size: 1.1rem;
+            color: var(--text-main);
+        }
+
+        .design-badge {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .design-badge.performance {
+            background: rgba(255, 107, 107, 0.2);
+            color: var(--status-danger);
+            border: 1px solid var(--status-danger);
+        }
+
+        .design-badge.balanced {
+            background: rgba(81, 207, 102, 0.2);
+            color: var(--status-success);
+            border: 1px solid var(--status-success);
+        }
+
+        .design-badge.cost {
+            background: rgba(255, 146, 43, 0.2);
+            color: var(--status-warning);
+            border: 1px solid var(--status-warning);
+        }
+
+        .design-visual {
+            position: relative;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            min-height: 220px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .component-svg {
+            width: 100%;
+            height: 200px;
+            opacity: 0;
+        }
+
+        .component-svg.visible {
+            animation: drawComponent 1.5s ease forwards;
+        }
+
+        @keyframes drawComponent {
+            to { opacity: 1; }
+        }
+
+        .heat-point {
+            animation: heatPulse 2s ease-in-out infinite;
+        }
+
+        .heat-point.active {
+            opacity: 0.6 !important;
+        }
+
+        @keyframes heatPulse {
+            0%, 100% { opacity: 0.4; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.1); }
+        }
+
+        .recommended-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: var(--status-success);
+            color: black;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-weight: 700;
+            font-size: 0.75rem;
+            letter-spacing: 1px;
+            opacity: 0;
+            transform: scale(0.8);
+        }
+
+        .recommended-badge.show {
+            animation: badgeAppear 0.5s ease forwards;
+        }
+
+        @keyframes badgeAppear {
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .design-metrics {
+            font-size: 0.85rem;
+        }
+
+        .metric-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .metric-row:last-child {
+            border-bottom: none;
+        }
+
+        .metric-row span:first-child {
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .metric-val {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .metric-val.success {
+            color: var(--status-success);
+        }
+
+        .metric-val.danger {
+            color: var(--status-danger);
+        }
+
+        .ai-reasoning {
+            background: rgba(0, 212, 255, 0.05);
+            border: 1px solid var(--blue-glow);
+            border-radius: 8px;
+            padding: 1.5rem;
+            opacity: 0;
+        }
+
+        .ai-reasoning.show {
+            animation: fadeIn 0.8s ease forwards;
+        }
+
+        .ai-reasoning h4 {
+            color: var(--blue-glow);
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            margin-bottom: 1rem;
+            letter-spacing: 1px;
+        }
+
+        .reasoning-content {
+            color: var(--text-main);
+            line-height: 1.7;
+            font-size: 0.95rem;
+        }
+
+        .reasoning-content strong {
+            color: var(--status-success);
+        }
+
+        /* Mobile responsive */
+        @media (max-width: 900px) {
+            .design-candidates-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- BACKGROUND -->
+    <div class="starfield-background"></div>
+
+    <!-- HEADER -->
+    <header class="header">
+        <div class="header-container">
+            <div class="logo-text" onclick="switchTab('overview')">BLUE ORIGIN</div>
+            <nav class="tab-nav">
+                <button class="tab-button active" onclick="switchTab('overview')">Overview</button>
+                <button class="tab-button" onclick="switchTab('option1')">Unified Data</button>
+                <button class="tab-button" onclick="switchTab('option2')">Intelligent Supply Chain</button>
+                <button class="tab-button" onclick="switchTab('option3')">AI QA & Inspection</button>
+                <button class="tab-button" onclick="switchTab('option4')">Physics Informed Gen AI</button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- OVERVIEW TAB -->
+    <div id="overview" class="tab-content active">
+        <section class="hero">
+            <div class="hero-visual-container">
+                <div id="earth-container"></div>
+                <div id="loading-spinner"></div>
+            </div>
+            <div class="hero-content fade-in">
+                <h1>BLUE AI</h1>
+                <h2>Strategic Options to Increase Manufacturing Optimization</h2>
+                <div class="hero-meta">
+                    <p><strong>Presented by:</strong> Jon Ernster & Jake Rafalson</p>
+                    <p>Carnegie Mellon University | Tepper School of Business</p>
+                    <p>November 2025</p>
+                </div>
+            </div>
+            <div class="scroll-indicator" onclick="document.getElementById('main-content').scrollIntoView({behavior: 'smooth'})">
+                <span>SCROLL TO EXPLORE</span>
+                <div class="arrow-down"></div>
+            </div>
+        </section>
+
+        <div id="main-content"></div>
+
+        <section class="container">
+            <div class="overview-clean-card fade-in">
+                <h3>The Challenge: Manufacturing at Scale and Information Silos</h3>
+                <p>Blue Origin is in the midst of a crucial transition: from an engineering focused R&D company to a high volume manufacturing enterprise to support its long-term vision of full spectrum space infrastructure, including reusable rockets, lunar permanence, and orbital servicing. This rapid scaling places immense pressure on existing systems, and production information remains fragmented.</p>
+                <p>Critical data across engineering, manufacturing, supply chain, and quality assurance exists in their respective silos. Engineers reconstruct part history manually by piecing together Teams messages, emails, call notes, and disconnected databases. Production decisions rely on fragmented views of equipment health, supplier performance, and quality trends.</p>
+                <p style="margin-top: 1rem;">This fragmentation creates three compounding problems:</p>
+                <ul>
+                    <li>Decisions are delayed because data hunting replaces analysis</li>
+                    <li>Quality suffers when teams work from different sources of data</li>
+                    <li>Production slows when equipment failures and supplier issues aren't visible until they cause line-down events</li>
+                </ul>
+            </div>
+
+            <div class="overview-clean-card fade-in">
+                <h3>The Strategic Question</h3>
+                <p>How can Blue Origin leverage AI and unified data systems to transform fragmented manufacturing operations into an integrated, responsive environment that scales with production demand?</p>
+            </div>
+
+            <div class="section-header fade-in">
+                <h2>FOUR AI INITIATIVES</h2>
+            </div>
+
+            <div class="initiative-grid">
+                <div class="initiative-card" onclick="switchTab('option1')">
+                    <h3>1. Unified Data & Knowledge Management Platform</h3>
+                    <p>A single system that connects part-level data with engineering communications, creating complete traceability from design decisions through production outcomes.</p>
+                    <div class="metric-pill primary">Foundation</div>
+                </div>
+                <div class="initiative-card" onclick="switchTab('option2')">
+                    <h3>2. Intelligent Supply Chain</h3>
+                    <p>AI-powered visibility into multi-tier supplier health, delivery performance, and lead time variability, ultimately optimizing the crucial "Buy vs. Make" decisions.</p>
+                    <div class="metric-pill warning">Operational</div>
+                </div>
+                <div class="initiative-card" onclick="switchTab('option3')">
+                    <h3>3. AI-Powered Quality Assurance & Inspection</h3>
+                    <p>Computer vision, ultrasonic, and electromagnetic systems would compare post-flight scans and manufacturing outputs against digital twins, accelerating throughput without compromising safety.</p>
+                    <div class="metric-pill warning">Operational</div>
+                </div>
+                <div class="initiative-card" onclick="switchTab('option4')">
+                    <h3>4. Physics-Based Generative Engineering</h3>
+                    <p>Hybrid machine learning models trained on the entire engineering and physics schema to move AI beyond analysis and into the generative design of structural, propulsion, and avionics systems.</p>
+                    <div class="metric-pill success">Strategic</div>
+                </div>
+            </div>
+
+            <div class="overview-clean-card fade-in" style="margin-top: 3rem;">
+                <h3>Current Tech Stack Foundation</h3>
+                <p>Based on publicly available information and our conversations during the Seattle trek, Blue Origin has established core infrastructure and AI capabilities:</p>
+                <ul>
+                    <li><strong>Blue Data Management System (BDMS):</strong> for centralized enterprise metadata management</li>
+                    <li><strong>Databricks on AWS GovCloud:</strong> for technical data repository and reporting</li>
+                    <li><strong>Palantir Foundry:</strong> for data integration and business data operating system</li>
+                    <li><strong>Microsoft Teams:</strong> as the enterprise collaboration layer</li>
+                    <li><strong>Windchill (PLM):</strong> for CAD, configuration and part-data control</li>
+                    <li><strong>IBM DOORS Next Generation (DNG):</strong> for requirements management and traceability</li>
+                    <li><strong>Jules:</strong> for work order execution and manufacturing workflow management</li>
+                    <li><strong>An M-BOM purchasing system:</strong> aligning engineering, manufacturing and supply chain data</li>
+                    <li><strong>BlueGPT:</strong> for enterprise AI interaction and knowledge augmented workflows</li>
+                    <li><strong>Internal ML expertise:</strong> with demonstrated success (for example, 3D printing defect detection)</li>
+                </ul>
+            </div>
+
+            <div class="overview-clean-card fade-in">
+                <h3>Competitor Approaches</h3>
+                <div class="competitor-grid">
+                    <div class="competitor-card spacex">
+                        <h4>SpaceX</h4>
+                        <p class="card-text">Built 'WarpDrive,' a proprietary monolithic system from scratch. Provides unmatched speed but required massive upfront investment</p>
+                    </div>
+                    <div class="competitor-card boeing">
+                        <h4>Boeing</h4>
+                        <p class="card-text">Deployed Palantir Foundry across 12+ defense production lines to unify legacy systems</p>
+                    </div>
+                    <div class="competitor-card ula">
+                        <h4>ULA</h4>
+                        <p class="card-text">Focused automation on specific bottlenecks (e.g., 'RocketGPT'). A conservative approach that proves ROI on a small scale</p>
+                    </div>
+                    <div class="competitor-card westinghouse">
+                        <h4>Westinghouse Electric Company</h4>
+                        <p class="card-text">Although not a competitor, the company uses its own proprietary platforms (HiVE™ and Bertha™) and a digital twin named WNEXUS to optimize construction and plant operations, in partnership with Google Cloud.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- OPTION 1: UNIFIED DATA -->
+    <div id="option1" class="tab-content">
+        <section class="page-header fade-in">
+            <h1>Unified Data & Knowledge Management Platform</h1>
+            <p class="tagline">A single system that connects part-level data with engineering communications, creating complete traceability from design decisions through production outcomes.</p>
+        </section>
+        <section class="container">
+            <div class="problem-card fade-in">
+                <h3>The Problem</h3>
+                <p class="card-text">When an anomaly occurs, such as a component displaying a Non-Conformance (NC) during inspection or a part failing on a test stand, engineers face a crucial challenge: reconstructing the full history of that serial number.  Critical context—including design rationale, manufacturing deviations, and test anomalies—is scattered across disconnected enterprise systems.</p>
+                <p class="card-text">This fragmentation leads to three acute, high-leverage pain points:</p>
+                <ul class="card-list">
+                    <li><strong>Decisions Are Delayed:</strong> Root-cause analysis becomes "archaeology". Engineers spend days manually hunting through disconnected sources like Microsoft Teams messages, emails, and disconnected databases instead of analyzing the issue.</li>
+                    <li><strong>Compliance Risk:</strong> For federal requirements, such as FAA Audits, complete traceability of every part is non-negotiable. This current system creates compliance risk and lengthens production timelines as teams struggle to provide an accurate, unified record.</li>
+                    <li><strong>Lost Knowledge:</strong> The rationale behind high-stakes decisions, especially from senior engineers, often lives only in undocumented conversations or disjointed sources, creating a risk of vital information being lost or forgotten.</li>
+                </ul>
+            </div>
+            
+            <div class="solution-card fade-in">
+                <h3>The AI Solution</h3>
+                <p class="card-text">A unified platform would integrate existing enterprise tools into a single, queryable knowledge base, expanding the capabilities of BlueGPT. This solution is focused on stitching together the essential information scattered across systems like DNG, Jules, and Windchill..</p>
+                <ul class="card-list">
+                    <li><strong>Intelligent Context Retrieval:</strong> Using LLMs with Retrieval Augmented Generation (RAG), the system would automatically ingest and link communications and documents to the correct part serial number.</li>
+                    <li><strong>The Power of the Query:</strong> Instead of performing manual searches across five different interfaces, an engineer could ask, "What changed on Serial #127?". The system would respond with a comprehensive, verified timeline linking all decisions, design deviations, and relevant test data instantly.</li>
+                </ul>
+            </div>
+
+            <div class="overview-clean-card fade-in" style="margin-top: 2rem;">
+                 <h3>Key Capabilities</h3>
+                 <ul class="card-list">
+                    <li><strong>Accelerated Audits:</strong> Provide engineers with a complete, searchable, and instantly verifiable record for investigations and FAA Audits.</li>
+                    <li><strong>Automatic Knowledge Capture:</strong> Automatically attach communication context and decision rationale to the associated parts, preserving vital institutional knowledge.</li>
+                    <li><strong>Time Savings:</strong> Leverage LLMs to surface relevant context instantly, potentially eliminating hours of manual, frustrating "data hunting".</li>
+                 </ul>
+            </div>
+
+            <!-- ENHANCED VISUALIZATION -->
+            <div class="unified-demo-container fade-in">
+                <h3 style="text-align: center; margin-bottom: 2rem;">The Power of the Query</h3>
+                
+                <!-- Query Input Section -->
+                <div class="query-section" id="querySection">
+                    <div class="query-box">
+                        <span class="query-prompt">BlueGPT > </span>
+                        <span class="query-text" id="queryText"></span>
+                        <span class="cursor">|</span>
+                    </div>
+                    <button class="search-button" id="searchButton" disabled>
+                        <span>Search</span>
+                    </button>
+                </div>
+
+                <!-- Data Sources Network -->
+                <div class="data-sources-network" id="dataNetwork">
+                    <svg class="connection-svg" id="connectionSvg" width="100%" height="300">
+                        <!-- Connection lines will be drawn here -->
+                    </svg>
+                    
+                    <!-- Data Source Nodes -->
+                    <div class="source-node" id="nodeTeams" style="top: 20px; left: 15%;">
+                        <div class="node-icon">💬</div>
+                        <div class="node-label">Microsoft Teams</div>
+                        <div class="node-status">Idle</div>
+                    </div>
+                    
+                    <div class="source-node" id="nodeJules" style="top: 20px; left: 40%;">
+                        <div class="node-icon">⚙️</div>
+                        <div class="node-label">Jules</div>
+                        <div class="node-status">Idle</div>
+                    </div>
+                    
+                    <div class="source-node" id="nodeBDMS" style="top: 20px; left: 65%;">
+                        <div class="node-icon">📊</div>
+                        <div class="node-label">BDMS</div>
+                        <div class="node-status">Idle</div>
+                    </div>
+                    
+                    <div class="source-node" id="nodeEmail" style="top: 150px; left: 27%;">
+                        <div class="node-icon">📧</div>
+                        <div class="node-label">Outlook</div>
+                        <div class="node-status">Idle</div>
+                    </div>
+                    
+                    <div class="source-node" id="nodeWindchill" style="top: 150px; left: 53%;">
+                        <div class="node-icon">📁</div>
+                        <div class="node-label">Windchill</div>
+                        <div class="node-status">Idle</div>
+                    </div>
+                </div>
+
+                <!-- Results Panel -->
+                <div class="results-panel" id="resultsPanel">
+                    <div class="results-header">
+                        <h4>Search Results</h4>
+                        <div class="results-meta" id="resultsMeta">
+                            <span class="result-count" id="resultCount">0 results</span>
+                            <span class="result-time" id="resultTime">0.0s</span>
+                        </div>
+                    </div>
+                    <div class="results-content" id="resultsContent">
+                        <div class="result-placeholder">Enter a query to begin search...</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- OPTION 2: INTELLIGENT SUPPLY CHAIN -->
+    <div id="option2" class="tab-content">
+        <section class="page-header fade-in">
+            <h1>Intelligent Supply Chain</h1>
+            <p class="tagline">AI-powered visibility into multi-tier supplier strength, delivery performance, and lead time variability to prevent cascading delays and make better "Buy vs. Make" decisions</p>
+        </section>
+        <section class="container">
+            <div class="problem-card fade-in">
+                <h3>The Problem</h3>
+                <p class="card-text">The scaling production to support the New Glenn program creates immense pressure on Blue Origin’s existing supply base. Thousands of SKUs flow through Blue Origin’s facilities and hundreds of outside manufacturers, with long lead times for components creating cascading delays.</p>
+                <p class="card-text">Blue Origin's push towards vertical integration requires constantly evaluating make-versus-buy decisions, but engineers lack real-time visibility into supplier strength, lead time variability, and cost tradeoffs. Matching these factors with historical purchase orders and projections of B;ue Origin’s demand all in an AI-powered model to be used for.</p>
+                <p class="card-text">By the time a critical vendor shows signs of financial instability or delivery problems, it's too late to find alternatives. Multi-tier supplier risks remain invisible until they surface as production delays.</p>
+            </div>
+
+            <div class="solution-card fade-in">
+                <h3>The AI Solution</h3>
+                <p class="card-text">Machine learning models would provide multi-tier supplier risk scoring and dynamic lead time forecasting, giving procurement and production planning teams early visibility into potential disruptions.</p>
+                <p class="card-text">The system would track delivery performance, quality metrics, and financial stability indicators across the supply base. AI models would learn patterns from historical purchase-order-to-delivery data and adjust forecasts based on supplier load, geopolitical events, and material availability. The platform would also auto-generate cost models comparing in-house vertical integration versus external procurement, factoring in Blue's billable CNC machine hours, material costs, and opportunity cost.</p>
+            </div>
+
+            <div class="overview-clean-card fade-in" style="margin-top: 2rem;">
+                 <h3>Key Capabilities</h3>
+                 <ul class="card-list">
+                    <li><strong>Flag at-risk vendors:</strong> 60-90 days before likely disruption based on delivery performance and financial health.</li>
+                    <li><strong>Forecast lead times dynamically:</strong> using historical data, current supplier load, and external factors.</li>
+                    <li><strong>Optimize make-versus-buy decisions:</strong> with automated cost modeling for vertical integration tradeoffs.</li>
+                 </ul>
+                 <p style="margin-top: 1rem; color: var(--text-muted);">This approach directly supports the manufacturing flow: The Supply Chain Program Managers (SCPMs) and buyers, who coordinate purchases based on M-BOMs and lead times, would receive an early warning system to ensure the Responsible Engineer's parts are available when needed.</p>
+            </div>
+
+            <!-- REBUILT SUPPLY CHAIN DASHBOARD -->
+            <div class="supply-chain-dashboard-container fade-in">
+                <div class="dashboard-header-bar">
+                    <div class="header-left">
+                        <h3>Supply Chain Command Center</h3>
+                        <div class="live-status">
+                            <div class="status-dot live"></div>
+                            <span>LIVE MONITORING</span>
+                        </div>
+                    </div>
+                    <div class="header-right">
+                        <div class="alert-badge critical">
+                            <span class="alert-icon">⚠</span>
+                            <span>3 HIGH RISK ALERTS</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Top KPI Cards -->
+                <div class="kpi-cards-row">
+                    <div class="kpi-card">
+                        <div class="kpi-icon-simple" style="background: rgba(255, 107, 107, 0.2);">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                <circle cx="10" cy="10" r="8" stroke="#FF6B6B" stroke-width="2"/>
+                                <path d="M10 6v5M10 14v.5" stroke="#FF6B6B" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                        </div>
+                        <div class="kpi-content">
+                            <div class="kpi-label">Network Health Score</div>
+                            <div class="kpi-value warning">62<span class="kpi-unit">/100</span></div>
+                            <div class="kpi-description">Overall supplier reliability across 847 vendors</div>
+                            <div class="kpi-change negative">-8 pts this week</div>
+                        </div>
+                        <div class="kpi-sparkline">
+                            <canvas id="healthSparkline" height="40"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-icon-simple" style="background: rgba(255, 146, 43, 0.2);">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                <path d="M10 4v12M4 10h12" stroke="#FF922B" stroke-width="2" stroke-linecap="round"/>
+                                <circle cx="10" cy="10" r="8" stroke="#FF922B" stroke-width="2"/>
+                            </svg>
+                        </div>
+                        <div class="kpi-content">
+                            <div class="kpi-label">Lead Time Drift</div>
+                            <div class="kpi-value danger">+4.2<span class="kpi-unit">weeks</span></div>
+                            <div class="kpi-description">Delay beyond baseline schedule for critical parts</div>
+                            <div class="kpi-change negative">BE-4 production impacted</div>
+                        </div>
+                        <div class="kpi-sparkline">
+                            <canvas id="leadTimeSparkline" height="40"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-icon-simple" style="background: rgba(81, 207, 102, 0.2);">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                <path d="M14 8l-4 4-2-2-4 4" stroke="#51CF66" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <circle cx="14" cy="8" r="1.5" fill="#51CF66"/>
+                            </svg>
+                        </div>
+                        <div class="kpi-content">
+                            <div class="kpi-label">AI-Driven Savings</div>
+                            <div class="kpi-value success">$1.2<span class="kpi-unit">M</span></div>
+                            <div class="kpi-description">Cost avoided through predictive sourcing decisions</div>
+                            <div class="kpi-change positive">+$45k this week</div>
+                        </div>
+                        <div class="kpi-sparkline">
+                            <canvas id="savingsSparkline" height="40"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-icon-simple" style="background: rgba(0, 212, 255, 0.2);">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                <circle cx="10" cy="10" r="7" stroke="#00D4FF" stroke-width="2"/>
+                                <path d="M10 7v3l2 2" stroke="#00D4FF" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                        </div>
+                        <div class="kpi-content">
+                            <div class="kpi-label">Prediction Accuracy</div>
+                            <div class="kpi-value">87<span class="kpi-unit">%</span></div>
+                            <div class="kpi-description">AI correctly forecasted disruptions 73 days early</div>
+                            <div class="kpi-change positive">+3% vs Q3</div>
+                        </div>
+                        <div class="kpi-mini-stat">
+                            <div class="mini-stat-item">
+                                <span class="mini-label">Avg Forecast Window</span>
+                                <span class="mini-value">73 days</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Dashboard Grid -->
+                <div class="dashboard-main-grid">
+                    <!-- LEFT COLUMN: Network + Risk Map -->
+                    <div class="dashboard-left-col">
+                        <!-- Supplier Network Visualization -->
+                        <div class="dashboard-panel">
+                            <div class="panel-header-new">
+                                <div class="panel-title-group">
+                                    <h4>Multi-Tier Supplier Network</h4>
+                                    <span class="panel-subtitle">Real-time health monitoring across 847 suppliers</span>
+                                </div>
+                                <button class="simulate-btn" id="cascadeBtn" onclick="triggerCascadeFailure()">
+                                    <span class="btn-icon">⚡</span>
+                                    SIMULATE DISRUPTION
+                                </button>
+                            </div>
+                            <div class="network-viz-container" id="supplierNetwork">
+                                <svg id="networkSVG" width="100%" height="400"></svg>
+                            </div>
+                            <div class="network-legend">
+                                <div class="legend-row">
+                                    <div class="legend-item-new">
+                                        <div class="health-indicator healthy"></div>
+                                        <span>Healthy (75-100)</span>
+                                    </div>
+                                    <div class="legend-item-new">
+                                        <div class="health-indicator warning"></div>
+                                        <span>At Risk (50-74)</span>
+                                    </div>
+                                    <div class="legend-item-new">
+                                        <div class="health-indicator critical"></div>
+                                        <span>Critical (<50)</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Risk Heat Map -->
+                        <div class="dashboard-panel">
+                            <div class="panel-header-new">
+                                <div class="panel-title-group">
+                                    <h4>Parts Criticality Matrix</h4>
+                                    <span class="panel-subtitle">Supply risk vs. lead time for high-value components</span>
+                                </div>
+                            </div>
+                            <div class="heatmap-container">
+                                <canvas id="partsHeatmap" height="220"></canvas>
+                            </div>
+                            <div class="chart-explainer">
+                                <div class="explainer-icon">ℹ️</div>
+                                <div class="explainer-text">
+                                    <strong>How to read:</strong> Bubble size = order value. Top-right quadrant (high risk + long lead time) = highest priority for AI intervention.
+                                </div>
+                            </div>
+                            <div class="heatmap-axes">
+                                <div class="axis-label-x">Lead Time (weeks) →</div>
+                                <div class="axis-label-y">← Supply Risk (0-100)</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- RIGHT COLUMN: Predictions + Parts + AI -->
+                    <div class="dashboard-right-col">
+                        <!-- Predictive Analytics Chart -->
+                        <div class="dashboard-panel">
+                            <div class="panel-header-new">
+                                <div class="panel-title-group">
+                                    <h4>Predictive Lead Time Forecast</h4>
+                                    <span class="panel-subtitle">AI projection of ValveTech Inc. delays over next 8 weeks</span>
+                                </div>
+                            </div>
+                            <div class="forecast-container">
+                                <canvas id="leadTimeForecast" height="200"></canvas>
+                            </div>
+                            <div class="chart-explainer">
+                                <div class="explainer-icon">ℹ️</div>
+                                <div class="explainer-text">
+                                    <strong>Orange (Actual):</strong> Current observed delays. <strong>Blue (AI Forecast):</strong> Predicted future trajectory based on financial health, quality trends, and capacity constraints.
+                                </div>
+                            </div>
+                            <div class="forecast-insights">
+                                <div class="insight-chip warning">
+                                    <span class="chip-icon">⚠</span>
+                                    <span>ValveTech Inc. delay projected to peak at +6.2 weeks by Jan 15</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Parts at Risk Tracker -->
+                        <div class="dashboard-panel">
+                            <div class="panel-header-new">
+                                <div class="panel-title-group">
+                                    <h4>High-Risk Parts Tracker</h4>
+                                    <span class="panel-subtitle">17 parts flagged for proactive mitigation</span>
+                                </div>
+                            </div>
+                            <div class="parts-list-container">
+                                <div class="parts-list-header">
+                                    <div class="col-part">Part Number</div>
+                                    <div class="col-supplier">Supplier</div>
+                                    <div class="col-risk">Risk</div>
+                                    <div class="col-action">Status</div>
+                                </div>
+                                <div class="parts-list-scrollable">
+                                    <div class="part-row critical-row">
+                                        <div class="col-part">
+                                            <span class="part-number">BE4-VLV-0012</span>
+                                            <span class="part-name">Main Valve Assembly</span>
+                                        </div>
+                                        <div class="col-supplier">
+                                            <div class="supplier-badge">ValveTech Inc.</div>
+                                        </div>
+                                        <div class="col-risk">
+                                            <div class="risk-score critical">93</div>
+                                        </div>
+                                        <div class="col-action">
+                                            <div class="action-badge sourcing">Alt sourcing</div>
+                                        </div>
+                                    </div>
+                                    <div class="part-row warning-row">
+                                        <div class="col-part">
+                                            <span class="part-number">NG-TRB-0089</span>
+                                            <span class="part-name">Turbopump Bearing</span>
+                                        </div>
+                                        <div class="col-supplier">
+                                            <div class="supplier-badge">PrecisionBear Co.</div>
+                                        </div>
+                                        <div class="col-risk">
+                                            <div class="risk-score warning">68</div>
+                                        </div>
+                                        <div class="col-action">
+                                            <div class="action-badge monitoring">Monitoring</div>
+                                        </div>
+                                    </div>
+                                    <div class="part-row warning-row">
+                                        <div class="col-part">
+                                            <span class="part-number">NG-FAB-0234</span>
+                                            <span class="part-name">Composite Panel</span>
+                                        </div>
+                                        <div class="col-supplier">
+                                            <div class="supplier-badge">Advanced Materials Ltd</div>
+                                        </div>
+                                        <div class="col-risk">
+                                            <div class="risk-score warning">71</div>
+                                        </div>
+                                        <div class="col-action">
+                                            <div class="action-badge expedite">Expedited</div>
+                                        </div>
+                                    </div>
+                                    <div class="part-row">
+                                        <div class="col-part">
+                                            <span class="part-number">BE4-SEN-0156</span>
+                                            <span class="part-name">Pressure Sensor</span>
+                                        </div>
+                                        <div class="col-supplier">
+                                            <div class="supplier-badge">SensorDynamics</div>
+                                        </div>
+                                        <div class="col-risk">
+                                            <div class="risk-score moderate">58</div>
+                                        </div>
+                                        <div class="col-action">
+                                            <div class="action-badge stable">Stable</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- AI Recommendation Engine -->
+                        <div class="dashboard-panel ai-recommendation-panel">
+                            <div class="panel-header-new">
+                                <div class="panel-title-group">
+                                    <h4>AI RECOMMENDATION ENGINE</h4>
+                                    <span class="panel-subtitle">Automated mitigation strategy • Confidence: 89%</span>
+                                </div>
+                            </div>
+                            <div class="ai-recommendation-content">
+                                <div class="recommendation-primary">
+                                    <div class="recommendation-title">⚠ IMMEDIATE ACTION REQUIRED</div>
+                                    <div class="recommendation-text">
+                                        Initiate vertical integration for Valve Housing Assembly (BE4-VLV-0012). ValveTech Inc. financial instability detected 73 days ago. Current trajectory projects 6+ week delay by Q1 2026, impacting BE-4 Batch 7 delivery.
+                                    </div>
+                                </div>
+                                <div class="recommendation-actions">
+                                    <div class="action-option primary">
+                                        <div class="option-header">
+                                            <span class="option-title">✓ Option 1: In-House Manufacturing</span>
+                                            <span class="option-confidence">Confidence: 92%</span>
+                                        </div>
+                                        <div class="option-metrics">
+                                            <span class="metric">Cost: $45k setup</span>
+                                            <span class="metric">Timeline: 8 weeks</span>
+                                            <span class="metric">ROI: $280k/year</span>
+                                        </div>
+                                    </div>
+                                    <div class="action-option secondary">
+                                        <div class="option-header">
+                                            <span class="option-title">Option 2: Dual Source (HydroValve Systems)</span>
+                                            <span class="option-confidence">Confidence: 76%</span>
+                                        </div>
+                                        <div class="option-metrics">
+                                            <span class="metric">Cost: +$18k/unit</span>
+                                            <span class="metric">Timeline: 4 weeks</span>
+                                            <span class="metric">Health: 88/100</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- OPTION 3: AI-POWERED POST-FLIGHT INSPECTION -->
+    <div id="option3" class="tab-content">
+        <section class="page-header fade-in">
+            <h1>AI-Powered Quality Assurance & Inspection</h1>
+            <p class="tagline">Computer vision, ultrasonic, and electromagnetic systems would compare post-flight scans and manufacturing outputs against digital twins, accelerating throughput without compromising safety.</p>
+        </section>
+        <section class="container">
+            <div class="problem-card fade-in">
+                <h3>The Problem</h3>
+                <p class="card-text">The core operational goal for New Glenn (both 7x2 and 9x4) is reusability, with the First Stage booster designed to fly up to 25 times. Between each flight, human inspectors must thoroughly examine the stage for damage before it can be verified for flight again.</p>
+                <ul class="card-list">
+                    <li><strong>Launch Cadence Bottleneck:</strong> This thorough, manual inspection process takes many weeks, becoming the limiting factor on Blue Origin's launch cadence, a critical issue for meeting customer demands.</li>
+                    <li><strong>Scaling and Safety Trade-Off:</strong> The processes required to meet the highest safety standards are time-intensive and do not scale to the required launch frequency. Human inspectors are also vulnerable to error, potentially missing subtle defects like micrometeoroid damage, early thermal stress patterns, or fatigue.</li>
+                    <li><strong>Data Reliability:</strong> Blue Origin already has an enormous data logging system, the BDMS (Blue Data Management System), which holds critical time-series data from thermal, shock, and avionics testing. However, much of this data can be low quality and needs filtering before reliable reports for flight verification can be generated.</li>
+                </ul>
+            </div>
+
+            <div class="solution-card fade-in">
+                <h3>The AI Solution</h3>
+                <p class="card-text">The solution is to augment and automate this process using advanced data collection and analysis, coupled with a smarter interrogation of existing systems like BDMS.</p>
+                <ul class="card-list">
+                    <li><strong>Autonomous Sensing:</strong> Computer vision, ultrasonic, and electromagnetic sensors would be deployed via mobile platforms (such as magnetic climbing robots) to inspect the cryogenic tanks and surrounding structure, feeding gigabytes of data back to an AI model.</li>
+                    <li><strong>Digital Twin Comparison:</strong> The system would compare the post-flight data and manufacturing outputs against a baseline digital twin (created from pre-flight scans and engineering specifications), automatically flagging Non-Conformances (NC) or anomalies for human review.</li>
+                    <li><strong>BDMS Standardization:</strong> The AI would be used to clean and standardize the millions of data sets inside the BDMS. Instead of manual report generation, an engineer could ask the AI: "Here are 1,000 sets of data. Do we see a trend in deterioration linked to a specific manufacturer or test date? Based on what we have accepted in the past, should we accept this current component now?".</li>
+                </ul>
+            </div>
+
+            <div class="overview-clean-card fade-in" style="margin-top: 2rem;">
+                 <h3>Key Capabilities</h3>
+                 <ul class="card-list">
+                    <li><strong>Accelerated Recertification:</strong> Reduce inspection time from weeks to days by automatically comparing post-flight condition against the baseline digital twin.</li>
+                    <li><strong>Enhanced Quality:</strong> Detect defects in manufacturing (welds, composite layups, 3D-printed components) faster and more consistently than manual inspection.</li>
+                    <li><strong>Predictive Maintenance:</strong> Detect subtle trends in deterioration, thermal stress, structural fatigue, or avionics issues that human eyes and manual processes might miss.</li>
+                 </ul>
+            </div>
+
+            <!-- MISSION CONTROL STYLE INSPECTION DASHBOARD -->
+            <div class="inspection-dashboard-container fade-in">
+                <!-- Header Bar -->
+                <div class="inspection-header-bar">
+                    <div class="header-left-group">
+                        <h3>Post-Flight Structural Analysis</h3>
+                        <div class="vehicle-info">
+                            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" style="margin-right: 6px;">
+                                <path d="M8 2L10 6H14L10.5 9L12 13L8 10.5L4 13L5.5 9L2 6H6L8 2Z" fill="currentColor"/>
+                            </svg>
+                            <span>New Glenn Stage 1 • Serial NG-007 • Flight 3</span>
+                        </div>
+                    </div>
+                    <div class="analysis-status-badge" id="analysisStatusBadge">
+                        <div class="status-pulse" id="statusPulse"></div>
+                        <span id="statusBadgeText">READY TO SCAN</span>
+                    </div>
+                </div>
+
+                <!-- Main Dashboard Grid -->
+                <div class="inspection-grid">
+                    <!-- LEFT PANEL: Rocket Scan Visualization -->
+                    <div class="scan-visual-panel">
+                        <div class="scan-panel-header">
+                            <span class="panel-title">STRUCTURAL SCAN</span>
+                            <div class="sensor-mode-toggle">
+                                <button class="mode-btn active" data-mode="visual" onclick="setSensorMode('visual')">
+                                    <span class="mode-icon">👁</span>
+                                    <span class="mode-label">VISUAL</span>
+                                </button>
+                                <button class="mode-btn" data-mode="thermal" onclick="setSensorMode('thermal')">
+                                    <span class="mode-icon">🌡</span>
+                                    <span class="mode-label">THERMAL</span>
+                                </button>
+                                <button class="mode-btn" data-mode="ultrasonic" onclick="setSensorMode('ultrasonic')">
+                                    <span class="mode-icon">〰</span>
+                                    <span class="mode-label">ULTRASONIC</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="scan-viewport">
+                            <!-- Scanning Progress Bar -->
+                            <div class="scan-progress-bar">
+                                <div class="scan-progress-fill" id="scanProgressFill"></div>
+                            </div>
+                            
+                            <!-- Scan Line Animation -->
+                            <div class="scan-line"></div>
+
+                            <!-- Rocket SVG -->
+                            <svg class="rocket-visualization" viewBox="0 0 400 700" id="rocketSVG">
+                                <!-- Background Grid -->
+                                <defs>
+                                    <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+                                        <path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(0, 212, 255, 0.05)" stroke-width="0.5"/>
+                                    </pattern>
+                                </defs>
+                                <rect width="400" height="700" fill="url(#grid)"/>
+
+                                <!-- Rocket Outline - Boxy style per image -->
+                                <path d="M200 50 L250 120 L250 650 L200 680 L150 650 L150 120 Z" 
+                                      fill="none" 
+                                      stroke="rgba(0, 85, 255, 0.3)" 
+                                      stroke-width="1"
+                                      class="rocket-outline"/>
+
+                                <!-- Heat Shield Zone (Orange Box) -->
+                                <g class="inspection-zone" id="zone-heat-shield">
+                                    <rect x="150" y="120" width="100" height="100" 
+                                          fill="rgba(255, 146, 43, 0.1)" 
+                                          stroke="var(--status-warning)" 
+                                          stroke-width="2"/>
+                                    <text x="200" y="165" text-anchor="middle" fill="#FF922B" font-size="14" font-weight="700">HEAT SHIELD</text>
+                                    <text x="200" y="185" text-anchor="middle" fill="#888" font-size="11">Station 60-140</text>
+                                    
+                                    <!-- 5 dots at top -->
+                                    <circle cx="165" cy="135" r="2" fill="#888"/>
+                                    <circle cx="182" cy="135" r="2" fill="#888"/>
+                                    <circle cx="200" cy="135" r="2" fill="#888"/>
+                                    <circle cx="217" cy="135" r="2" fill="#888"/>
+                                    <circle cx="235" cy="135" r="2" fill="#888"/>
+
+                                    <!-- Defect Marker (Zoom Bubble) -->
+                                    <circle class="defect-marker" cx="300" cy="250" r="12" 
+                                            fill="none" stroke="var(--status-warning)" stroke-width="3" opacity="0"/>
+                                </g>
+
+                                <!-- Fuel Tank Zone (Green Box) -->
+                                <g class="inspection-zone" id="zone-fuel-tank">
+                                    <rect x="150" y="225" width="100" height="180" 
+                                          fill="rgba(81, 207, 102, 0.1)" 
+                                          stroke="var(--status-success)" 
+                                          stroke-width="2"/>
+                                    <text x="200" y="310" text-anchor="middle" fill="#51CF66" font-size="14" font-weight="700">FUEL TANK</text>
+                                    <text x="200" y="330" text-anchor="middle" fill="#888" font-size="11">Station 145-265</text>
+                                    <!-- Dashed line -->
+                                    <line x1="150" y1="270" x2="250" y2="270" stroke="rgba(255,255,255,0.1)" stroke-width="1" stroke-dasharray="4,4"/>
+                                </g>
+
+                                <!-- Avionics Bay Zone (Cyan Box) -->
+                                <g class="inspection-zone" id="zone-avionics">
+                                    <rect x="150" y="410" width="100" height="100" 
+                                          fill="rgba(0, 212, 255, 0.1)" 
+                                          stroke="var(--blue-glow)" 
+                                          stroke-width="2"/>
+                                    <text x="200" y="455" text-anchor="middle" fill="#00D4FF" font-size="14" font-weight="700">AVIONICS</text>
+                                    <text x="200" y="475" text-anchor="middle" fill="#888" font-size="11">Station 270-340</text>
+                                </g>
+
+                                <!-- Engine Mount Zone (Red Box) -->
+                                <g class="inspection-zone" id="zone-engine-mount">
+                                    <rect x="150" y="515" width="100" height="135" 
+                                          fill="rgba(255, 107, 107, 0.1)" 
+                                          stroke="var(--status-danger)" 
+                                          stroke-width="2"/>
+                                    <text x="200" y="575" text-anchor="middle" fill="#FF6B6B" font-size="14" font-weight="700">ENGINE MOUNT</text>
+                                    <text x="200" y="595" text-anchor="middle" fill="#888" font-size="11">Station 345-440</text>
+                                    
+                                    <circle cx="160" cy="530" r="3" stroke="#FF6B6B" stroke-width="1.5" fill="none"/>
+                                    <circle cx="240" cy="530" r="3" stroke="#FF6B6B" stroke-width="1.5" fill="none"/>
+                                </g>
+                            </svg>
+
+                            <!-- Scan Stats Overlay (Bottom Left) -->
+                            <div class="scan-stats-overlay">
+                                <div class="stat-item-overlay">
+                                    <span class="stat-label-overlay">SCAN PROGRESS</span>
+                                    <span class="stat-value-overlay" id="scanPercent">0%</span>
+                                </div>
+                                <div class="stat-item-overlay">
+                                    <span class="stat-label-overlay">DATA POINTS</span>
+                                    <span class="stat-value-overlay" id="dataPoints">0</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- RIGHT PANEL: Telemetry Dashboard -->
+                    <div class="telemetry-dashboard">
+                        <!-- Top Metrics Row -->
+                        <div class="metrics-row-top">
+                            <div class="metric-box">
+                                <div class="metric-label-dash">MAX DEVIATION</div>
+                                <div class="metric-value-dash" id="maxDeviationDash">1.4</div>
+                                <div class="metric-unit-dash">millimeters</div>
+                            </div>
+                            <div class="metric-box">
+                                <div class="metric-label-dash">DEFECTS FOUND</div>
+                                <div class="metric-value-dash blue" id="defectsFound">2</div>
+                                <div class="metric-unit-dash">anomalies</div>
+                            </div>
+                            <div class="metric-box">
+                                <div class="metric-label-dash">CONFIDENCE</div>
+                                <div class="metric-value-dash success" id="confidenceDash">91.3%</div>
+                                <div class="metric-unit-dash">accuracy</div>
+                            </div>
+                        </div>
+
+                        <!-- Zone Status Grid -->
+                        <div class="zone-status-panel">
+                            <div class="panel-header-dash">
+                                <span class="panel-title-dash">ZONE STATUS</span>
+                                <span class="panel-subtitle-dash" id="zonesCompleted">4 / 4 Complete</span>
+                            </div>
+                            <div class="zone-status-list">
+                                <!-- Heat Shield Status -->
+                                <div class="zone-status-item">
+                                    <div class="status-dot-large warning"></div>
+                                    <div class="zone-info">
+                                        <span class="zone-title">Heat Shield</span>
+                                        <span class="zone-desc">WARNING: 0.8mm deviation</span>
+                                    </div>
+                                </div>
+                                <!-- Fuel Tank Status -->
+                                <div class="zone-status-item">
+                                    <div class="status-dot-large success"></div>
+                                    <div class="zone-info">
+                                        <span class="zone-title">Fuel Tank</span>
+                                        <span class="zone-desc">PASS: 0.02mm deviation</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Defect Detection Feed -->
+                        <div class="defect-feed-panel">
+                            <div class="panel-header-dash">
+                                <span class="panel-title-dash">DEFECT DETECTION FEED</span>
+                                <span class="live-tag">
+                                    <div class="live-dot-anim"></div> LIVE
+                                </span>
+                            </div>
+                            <div class="defect-feed-content" id="defectFeedContent">
+                                <!-- Example feed items populated by JS -->
+                            </div>
+                        </div>
+
+                        <!-- AI Verdict Panel -->
+                        <div class="verdict-panel">
+                            <div class="verdict-title">AI ANALYSIS VERDICT</div>
+                            <div class="verdict-text" style="color: var(--blue-glow); font-weight: 700; margin-bottom: 10px;">
+                                VERDICT: VEHICLE NOT CLEARED FOR IMMEDIATE REUSE
+                            </div>
+                            <div class="verdict-text" style="color: #ccc; font-size: 0.8rem;">
+                                Engine Mount requires structural repair before next flight. Estimated downtime: 48-72 hours for micro-fracture remediation at Station 360.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- OPTION 4: GENERATIVE ENGINEERING -->
+    <div id="option4" class="tab-content">
+        <section class="page-header fade-in">
+            <h1>Physics Informed Gen AI</h1>
+            <p class="tagline">Hybrid machine learning models trained on the entire engineering and physics schema to move AI beyond analysis and into the generative creation of structural, propulsion, and avionics systems.</p>
+        </section>
+        <section class="container">
+            <div class="problem-card fade-in">
+                <h3>The Problem</h3>
+                <p class="card-text">Traditional aerospace design follows a sequential, siloed, and costly optimization process.</p>
+                <ul class="card-list">
+                    <li><strong>Siloed Development:</strong> Structural, propulsion, and avionics are treated as separate problems, making design changes slow and expensive.</li>
+                    <li><strong>Decentralized Knowledge:</strong> Critical knowledge is held by a handful of experts ("PhDs") or locked in non-queryable PDFs.</li>
+                    <li><strong>The Manufacturability Gap:</strong> Sequential process prioritizes engineering perfection over "scrappy," cost-effective manufacturing.</li>
+                </ul>
+            </div>
+
+            <div class="solution-card fade-in">
+                <h3>The Solution: "Super Employee"</h3>
+                <p class="card-text">Train a secure, high-fidelity model on Blue Origin's entire schema of technical knowledge (CAD, EMI data, Physics constraints).</p>
+                <ul class="card-list">
+                    <li><strong>Generative Tasking:</strong> Task the AI with complex, multi-objective design problems (e.g., "Design the MVP for New Glenn first stage optimizing for 30-launch life").</li>
+                    <li><strong>Risk Mitigation:</strong> Automatically design components to avoid known interference pitfalls.</li>
+                    <li><strong>Institutional Knowledge Capture:</strong> Ensure no knowledge walks out the door.</li>
+                </ul>
+            </div>
+
+            <!-- GENERATIVE AI VISUALIZATION -->
+            <div class="gen-ai-container fade-in">
+                <div class="gen-ai-header">
+                    <div>
+                        <h3>AI Design Generation System</h3>
+                        <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.5rem;">Explored 10,247 candidates • 500x faster than traditional methods</p>
+                    </div>
+                    <div class="gen-status-badge" id="genStatus">
+                        <span class="status-dot"></span>
+                        <span id="genStatusText">INITIALIZING...</span>
+                    </div>
+                </div>
+
+                <!-- INPUT CONSTRAINTS PANEL -->
+                <div class="constraints-panel" id="constraintsPanel">
+                    <h4>Design Requirements</h4>
+                    <div class="constraint-item">
+                        <span class="constraint-label">Component:</span>
+                        <span class="constraint-value">Avionics Bay Structure</span>
+                    </div>
+                    <div class="constraint-item">
+                        <span class="constraint-label">Target Mass:</span>
+                        <span class="constraint-value">≤ 45 kg</span>
+                    </div>
+                    <div class="constraint-item">
+                        <span class="constraint-label">EMI Tolerance:</span>
+                        <span class="constraint-value">≤ 0.01% Interference</span>
+                    </div>
+                    <div class="constraint-item">
+                        <span class="constraint-label">Flight Cycles:</span>
+                        <span class="constraint-value">30 launches minimum</span>
+                    </div>
+                    <div class="constraint-item">
+                        <span class="constraint-label">Manufacturing:</span>
+                        <span class="constraint-value">Optimize for cost</span>
+                    </div>
+                </div>
+
+                <!-- DESIGN CANDIDATES GRID -->
+                <div class="design-candidates-grid">
+                    <!-- Design A -->
+                    <div class="design-card" id="designA">
+                        <div class="design-header">
+                            <h4>Design A</h4>
+                            <span class="design-badge performance">Performance Focus</span>
+                        </div>
+                        <div class="design-visual">
+                            <svg class="component-svg" viewBox="0 0 200 200">
+                                <!-- Complex lattice structure (Blue Grid) -->
+                                <rect x="40" y="40" width="120" height="120" fill="none" stroke="var(--blue-origin)" stroke-width="2"/>
+                                <line x1="40" y1="70" x2="160" y2="70" stroke="var(--blue-origin)" stroke-width="1" opacity="0.6"/>
+                                <line x1="40" y1="100" x2="160" y2="100" stroke="var(--blue-origin)" stroke-width="1" opacity="0.6"/>
+                                <line x1="40" y1="130" x2="160" y2="130" stroke="var(--blue-origin)" stroke-width="1" opacity="0.6"/>
+                                <line x1="70" y1="40" x2="70" y2="160" stroke="var(--blue-origin)" stroke-width="1" opacity="0.6"/>
+                                <line x1="100" y1="40" x2="100" y2="160" stroke="var(--blue-origin)" stroke-width="1" opacity="0.6"/>
+                                <line x1="130" y1="40" x2="130" y2="160" stroke="var(--blue-origin)" stroke-width="1" opacity="0.6"/>
+                                <!-- Heat overlay (Orange/Red Circles) -->
+                                <circle class="heat-point" cx="80" cy="80" r="15" fill="var(--status-danger)" opacity="0"/>
+                                <circle class="heat-point" cx="120" cy="120" r="12" fill="var(--status-warning)" opacity="0"/>
+                            </svg>
+                        </div>
+                        <div class="design-metrics">
+                            <div class="metric-row">
+                                <span>Mass:</span>
+                                <span class="metric-val danger" id="massA">-- kg</span>
+                            </div>
+                            <div class="metric-row">
+                                <span>EMI:</span>
+                                <span class="metric-val danger" id="emiA">--%</span>
+                            </div>
+                            <div class="metric-row">
+                                <span>Cost:</span>
+                                <span class="metric-val" id="costA">--</span>
+                            </div>
+                            <div class="metric-row">
+                                <span>Cycles:</span>
+                                <span class="metric-val success" id="cyclesA">--</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Design B (Winner) -->
+                    <div class="design-card" id="designB">
+                        <div class="design-header">
+                            <h4>Design B</h4>
+                            <span class="design-badge balanced">Balanced</span>
+                        </div>
+                        <div class="design-visual">
+                            <svg class="component-svg" viewBox="0 0 200 200">
+                                <!-- Optimized honeycomb structure (Green) -->
+                                <polygon points="100,40 130,55 130,85 100,100 70,85 70,55" fill="none" stroke="var(--status-success)" stroke-width="2"/>
+                                <polygon points="130,55 160,70 160,100 130,115 130,85" fill="none" stroke="var(--status-success)" stroke-width="1.5" opacity="0.8"/>
+                                <polygon points="70,55 40,70 40,100 70,115 70,85" fill="none" stroke="var(--status-success)" stroke-width="1.5" opacity="0.8"/>
+                                <polygon points="100,100 130,115 130,145 100,160 70,145 70,115" fill="none" stroke="var(--status-success)" stroke-width="1.5" opacity="0.8"/>
+                                <polygon points="130,115 160,130 160,160 130,145" fill="none" stroke="var(--status-success)" stroke-width="1" opacity="0.6"/>
+                                <polygon points="70,115 40,130 40,160 70,145" fill="none" stroke="var(--status-success)" stroke-width="1" opacity="0.6"/>
+                                <!-- Optimal heat distribution (Green Circles) -->
+                                <circle class="heat-point" cx="100" cy="70" r="8" fill="var(--status-success)" opacity="0"/>
+                                <circle class="heat-point" cx="100" cy="130" r="8" fill="var(--status-success)" opacity="0"/>
+                            </svg>
+                            <div class="recommended-badge" id="recBadge">
+                                ✓ RECOMMENDED
+                            </div>
+                        </div>
+                        <div class="design-metrics">
+                            <div class="metric-row">
+                                <span>Mass:</span>
+                                <span class="metric-val success" id="massB">-- kg</span>
+                            </div>
+                            <div class="metric-row">
+                                <span>EMI:</span>
+                                <span class="metric-val success" id="emiB">--%</span>
+                            </div>
+                            <div class="metric-row">
+                                <span>Cost:</span>
+                                <span class="metric-val success" id="costB">--</span>
+                            </div>
+                            <div class="metric-row">
+                                <span>Cycles:</span>
+                                <span class="metric-val success" id="cyclesB">--</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Design C -->
+                    <div class="design-card" id="designC">
+                        <div class="design-header">
+                            <h4>Design C</h4>
+                            <span class="design-badge cost">Cost Optimized</span>
+                        </div>
+                        <div class="design-visual">
+                            <svg class="component-svg" viewBox="0 0 200 200">
+                                <!-- Simple box structure (Orange) -->
+                                <rect x="50" y="50" width="100" height="100" fill="none" stroke="var(--status-warning)" stroke-width="2"/>
+                                <line x1="50" y1="75" x2="150" y2="75" stroke="var(--status-warning)" stroke-width="1.5" opacity="0.6"/>
+                                <line x1="50" y1="100" x2="150" y2="100" stroke="var(--status-warning)" stroke-width="1.5" opacity="0.6"/>
+                                <line x1="50" y1="125" x2="150" y2="125" stroke="var(--status-warning)" stroke-width="1.5" opacity="0.6"/>
+                                <line x1="75" y1="50" x2="75" y2="150" stroke="var(--status-warning)" stroke-width="1.5" opacity="0.6"/>
+                                <line x1="125" y1="50" x2="125" y2="150" stroke="var(--status-warning)" stroke-width="1.5" opacity="0.6"/>
+                                <!-- Stress concentration (Orange/Red Circles) -->
+                                <circle class="heat-point" cx="50" cy="50" r="10" fill="var(--status-danger)" opacity="0"/>
+                                <circle class="heat-point" cx="150" cy="150" r="10" fill="var(--status-danger)" opacity="0"/>
+                            </svg>
+                        </div>
+                        <div class="design-metrics">
+                            <div class="metric-row">
+                                <span>Mass:</span>
+                                <span class="metric-val success" id="massC">-- kg</span>
+                            </div>
+                            <div class="metric-row">
+                                <span>EMI:</span>
+                                <span class="metric-val success" id="emiC">--%</span>
+                            </div>
+                            <div class="metric-row">
+                                <span>Cost:</span>
+                                <span class="metric-val success" id="costC">--</span>
+                            </div>
+                            <div class="metric-row">
+                                <span>Cycles:</span>
+                                <span class="metric-val danger" id="cyclesC">--</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Added Subtitle -->
+                <p style="text-align: center; margin-top: -1rem; margin-bottom: 2rem; font-size: 0.9rem; color: var(--text-muted); max-width: 800px; margin-left: auto; margin-right: auto; line-height: 1.5;">
+                    AI-generated structural configurations for the Avionics Bay. Each grid shows component placement (dots = mass distribution). The AI simultaneously optimizes for minimum mass, maximum EMI shielding, lowest cost, and longest operational life. Design B achieves the best overall balance.
+                </p>
+
+                <!-- AI REASONING PANEL -->
+                <div class="ai-reasoning" id="aiReasoning">
+                    <h4>AI Analysis & Recommendation</h4>
+                    <div class="reasoning-content">
+                        <p id="reasoningText">Analyzing physics constraints and performance trade-offs...</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <footer class="footer">
+        <p>Presented by Jon Ernster & Jake Rafalson | CMU Tepper School of Business | November 2025</p>
+    </footer>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // --- 1. THREE.JS EARTH ---
+        let scene, camera, renderer, earth, moon, starField;
+        let isDragging = false;
+        let previousMousePosition = { x: 0, y: 0 };
+        const earthContainer = document.getElementById('earth-container');
+
+        function initThreeJS() {
+            if (!earthContainer) return;
+
+            try {
+                renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+                renderer.setSize(earthContainer.clientWidth, earthContainer.clientHeight);
+                renderer.setPixelRatio(window.devicePixelRatio);
+                earthContainer.appendChild(renderer.domElement);
+                
+                scene = new THREE.Scene();
+                const width = earthContainer.clientWidth;
+                const height = earthContainer.clientHeight;
+                camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
+                camera.position.z = 3.5;
+
+                const ambientLight = new THREE.AmbientLight(0xffffff, 0.3);
+                scene.add(ambientLight);
+                const sunLight = new THREE.DirectionalLight(0xffffff, 1.5);
+                sunLight.position.set(5, 3, 5);
+                scene.add(sunLight);
+
+                const textureLoader = new THREE.TextureLoader();
+                const loadingSpinner = document.getElementById('loading-spinner');
+                const earthGroup = new THREE.Group();
+                scene.add(earthGroup);
+
+                Promise.all([
+                    textureLoader.loadAsync('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/earth_atmos_2048.jpg'),
+                    textureLoader.loadAsync('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/earth_specular_2048.jpg'),
+                    textureLoader.loadAsync('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/earth_normal_2048.jpg'),
+                    textureLoader.loadAsync('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/moon_1024.jpg')
+                ]).then(([map, specular, normal, moonTex]) => {
+                    if(loadingSpinner) loadingSpinner.style.display = 'none';
+                    const earthGeo = new THREE.SphereGeometry(1, 64, 64);
+                    const earthMat = new THREE.MeshPhongMaterial({
+                        map: map, specularMap: specular, normalMap: normal,
+                        specular: new THREE.Color(0x333333), shininess: 15
+                    });
+                    earth = new THREE.Mesh(earthGeo, earthMat);
+                    earthGroup.add(earth);
+                    const atmosGeo = new THREE.SphereGeometry(1.02, 64, 64);
+                    const atmosMat = new THREE.MeshPhongMaterial({
+                        color: 0x0055FF, transparent: true, opacity: 0.15,
+                        side: THREE.BackSide, blending: THREE.AdditiveBlending
+                    });
+                    earthGroup.add(new THREE.Mesh(atmosGeo, atmosMat));
+                    const moonGeo = new THREE.SphereGeometry(0.27, 32, 32);
+                    const moonMat = new THREE.MeshPhongMaterial({ map: moonTex, shininess: 5 });
+                    moon = new THREE.Mesh(moonGeo, moonMat);
+                    scene.add(moon);
+                    earth.rotation.z = 23.4 * Math.PI / 180;
+                    animate();
+                }).catch(err => {
+                    console.error("Texture Error", err);
+                    if(loadingSpinner) loadingSpinner.style.display = 'none';
+                });
+
+                const starGeo = new THREE.BufferGeometry();
+                const posArray = new Float32Array(1000 * 3);
+                for(let i=0; i<3000; i++) posArray[i] = (Math.random() - 0.5) * 15;
+                starGeo.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+                const starMat = new THREE.PointsMaterial({size: 0.01, color: 0xffffff, transparent: true, opacity: 0.8});
+                starField = new THREE.Points(starGeo, starMat);
+                scene.add(starField);
+
+            } catch (error) {
+                console.warn("WebGL failed, falling back to static image", error);
+                const spinner = document.getElementById('loading-spinner');
+                if(spinner) spinner.style.display = 'none';
+                earthContainer.innerHTML = `<img src="https://upload.wikimedia.org/wikipedia/commons/9/97/The_Earth_seen_from_Apollo_17.jpg" style="width: 100%; height: 100%; object-fit: contain; border-radius: 50%;">`;
+            }
+        }
+
+        let time = 0;
+        function animate() {
+            requestAnimationFrame(animate);
+            if(earth && !isDragging) earth.rotation.y += 0.0005;
+            if(moon) {
+                time += 0.003;
+                moon.position.set(Math.cos(time)*2.5, Math.sin(time*0.5)*0.5, Math.sin(time)*2.5);
+                moon.rotation.y += 0.01;
+                moon.lookAt(0,0,0);
+            }
+            if(starField) starField.rotation.y -= 0.0001;
+            renderer.render(scene, camera);
+        }
+
+        // Mouse/Touch Events
+        function handleStart(x, y) { isDragging = true; previousMousePosition = { x, y }; }
+        function handleMove(x, y) {
+            if(isDragging && earth) {
+                earth.rotation.y += (x - previousMousePosition.x) * 0.005;
+                previousMousePosition = { x, y };
+            }
+        }
+        function handleEnd() { isDragging = false; }
+        document.addEventListener('mousedown', e => handleStart(e.clientX, e.clientY));
+        document.addEventListener('mousemove', e => handleMove(e.clientX, e.clientY));
+        document.addEventListener('mouseup', handleEnd);
+        document.addEventListener('touchstart', e => handleStart(e.touches[0].clientX, e.touches[0].clientY));
+        document.addEventListener('touchmove', e => handleMove(e.touches[0].clientX, e.touches[0].clientY));
+        document.addEventListener('touchend', handleEnd);
+        window.addEventListener('resize', () => {
+            if(camera && renderer) {
+                camera.aspect = earthContainer.clientWidth / earthContainer.clientHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(earthContainer.clientWidth, earthContainer.clientHeight);
+            }
+        });
+
+        // --- 6. UNIFIED DATA SEARCH ANIMATION ---
+        let unifiedSearchActive = false;
+
+        function startUnifiedSearch() {
+            if (unifiedSearchActive) return;
+            unifiedSearchActive = true;
+
+            const queryText = document.getElementById('queryText');
+            const searchButton = document.getElementById('searchButton');
+            const queryBox = document.querySelector('.query-box');
+            const resultsPanel = document.getElementById('resultsPanel');
+            const resultCount = document.getElementById('resultCount');
+            const resultTime = document.getElementById('resultTime');
+            const resultsContent = document.getElementById('resultsContent');
+
+            const fullQuery = 'What changed on Serial #127 between Design Rev A and Test Stand B?';
+            
+            // Phase 1: Type out query
+            let charIndex = 0;
+            const typingInterval = setInterval(() => {
+                if (charIndex < fullQuery.length) {
+                    queryText.textContent += fullQuery[charIndex];
+                    charIndex++;
+                } else {
+                    clearInterval(typingInterval);
+                    searchButton.disabled = false;
+                    queryBox.classList.add('active');
+                    
+                    // Auto-trigger search after brief pause
+                    setTimeout(() => {
+                        searchButton.click();
+                    }, 800);
+                }
+            }, 50);
+
+            // Search button click handler
+            searchButton.onclick = function() {
+                if (this.disabled) return;
+                this.disabled = true;
+                this.classList.add('searching');
+                this.querySelector('span').textContent = 'Searching...';
+                
+                // Phase 2: Search data sources sequentially
+                const nodes = [
+                    { el: document.getElementById('nodeTeams'), delay: 500, results: 247 },
+                    { el: document.getElementById('nodeJules'), delay: 1200, results: 89 },
+                    { el: document.getElementById('nodeBDMS'), delay: 1900, results: 156 },
+                    { el: document.getElementById('nodeEmail'), delay: 2600, results: 312 },
+                    { el: document.getElementById('nodeWindchill'), delay: 3300, results: 43 }
+                ];
+
+                let totalResults = 0;
+                nodes.forEach(node => {
+                    setTimeout(() => {
+                        // Activate node
+                        node.el.classList.add('searching');
+                        node.el.querySelector('.node-status').textContent = 'Searching...';
+                        
+                        // Draw connection line
+                        drawConnectionLine(node.el);
+                        
+                        // Mark as found after search
+                        setTimeout(() => {
+                            node.el.classList.remove('searching');
+                            node.el.classList.add('found');
+                            node.el.querySelector('.node-status').textContent = `${node.results} found`;
+                            totalResults += node.results;
+                        }, 500);
+                    }, node.delay);
+                });
+
+                // Phase 3: Show results
+                setTimeout(() => {
+                    searchButton.querySelector('span').textContent = 'Complete';
+                    searchButton.classList.remove('searching');
+                    searchButton.style.background = 'var(--status-success)';
+                    
+                    // Animate counter
+                    let count = 0;
+                    const countInterval = setInterval(() => {
+                        if (count <= totalResults) {
+                            resultCount.textContent = `${count} results`;
+                            count += 47;
+                        } else {
+                            resultCount.textContent = `${totalResults} results`;
+                            clearInterval(countInterval);
+                        }
+                    }, 30);
+                    
+                    animateCounter(resultTime, 1.2, 800, 1, 's', true);
+                    
+                    // Show results panel
+                    resultsPanel.classList.add('show');
+                    
+                    // Populate results
+                    resultsContent.innerHTML = '';
+                    const sampleResults = [
+                        {
+                            source: 'Microsoft Teams',
+                            text: 'Engineering discussion: J.Doe authorized tolerance deviation (+0.2mm) based on vibration test data from Test Stand B.',
+                            date: 'Oct 24, 2024 14:32'
+                        },
+                        {
+                            source: 'Jules',
+                            text: 'ECO-1138 approved: Design Rev A → Rev A.1. Updated mounting bracket specifications for Serial #127.',
+                            date: 'Oct 23, 2024 09:15'
+                        },
+                        {
+                            source: 'BDMS',
+                            text: 'Sensor data logged: Vibration amplitude 12.4Hz during Test Stand B qualification run.',
+                            date: 'Oct 22, 2024 16:48'
+                        }
+                    ];
+
+                    sampleResults.forEach((result, index) => {
+                        setTimeout(() => {
+                            const resultItem = document.createElement('div');
+                            resultItem.className = 'result-item';
+                            resultItem.innerHTML = `
+                                <span class="result-source">${result.source}</span>
+                                <div class="result-text">${result.text}</div>
+                                <div class="result-date">${result.date}</div>
+                            `;
+                            resultsContent.appendChild(resultItem);
+                            setTimeout(() => resultItem.classList.add('show'), 50);
+                        }, index * 400);
+                    });
+                    
+                    // Reset after 12s
+                    setTimeout(() => {
+                        unifiedSearchActive = false;
+                    }, 12000);
+                }, 4500);
+            };
+        }
+
+        function drawConnectionLine(nodeEl) {
+            const svg = document.getElementById('connectionSvg');
+            const svgRect = svg.getBoundingClientRect();
+            const nodeRect = nodeEl.getBoundingClientRect();
+            
+            // Calculate center of node relative to SVG
+            const nodeCenterX = nodeRect.left - svgRect.left + nodeRect.width / 2;
+            const nodeCenterY = nodeRect.top - svgRect.top + nodeRect.height / 2;
+            
+            // Center top of network (query origin)
+            const originX = svgRect.width / 2;
+            const originY = 20;
+            
+            // Create line
+            const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            line.setAttribute('x1', originX);
+            line.setAttribute('y1', originY);
+            line.setAttribute('x2', nodeCenterX);
+            line.setAttribute('y2', nodeCenterY);
+            line.setAttribute('stroke', 'var(--blue-glow)');
+            line.setAttribute('stroke-width', '2');
+            line.setAttribute('opacity', '0');
+            svg.appendChild(line);
+            
+            // Animate line
+            setTimeout(() => {
+                line.setAttribute('opacity', '0.6');
+                line.style.transition = 'opacity 0.5s';
+            }, 100);
+        }
+
+        // --- OPTION 2: REBUILT SUPPLY CHAIN INTELLIGENCE ---
+        let networkInitialized = false;
+        let cascadeRunning = false;
+
+        function initSupplyChainDashboard() {
+            if (networkInitialized) return;
+            networkInitialized = true;
+            
+            // Initialize sparklines
+            initSparklines();
+            
+            // Draw supplier network
+            drawSupplierNetwork();
+            
+            // Initialize charts
+            initPartsHeatmap();
+            initLeadTimeForecast();
+            
+            // Start animated counters
+            animateDashboardMetrics();
+        }
+
+        function initSparklines() {
+            // Health Score Sparkline
+            const healthCtx = document.getElementById('healthSparkline');
+            if (healthCtx) {
+                new Chart(healthCtx, {
+                    type: 'line',
+                    data: {
+                        labels: Array(20).fill(''),
+                        datasets: [{
+                            data: [78, 76, 74, 75, 72, 70, 69, 68, 67, 66, 65, 64, 63, 65, 64, 63, 62, 61, 60, 62],
+                            borderColor: '#FF922B',
+                            borderWidth: 2,
+                            fill: false,
+                            tension: 0.4,
+                            pointRadius: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            x: { display: false },
+                            y: { display: false, min: 55, max: 80 }
+                        }
+                    }
+                });
+            }
+            
+            // Lead Time Sparkline
+            const leadCtx = document.getElementById('leadTimeSparkline');
+            if (leadCtx) {
+                new Chart(leadCtx, {
+                    type: 'line',
+                    data: {
+                        labels: Array(20).fill(''),
+                        datasets: [{
+                            data: [0, 0.2, 0.4, 0.6, 0.8, 1.2, 1.5, 1.8, 2.1, 2.4, 2.7, 3.0, 3.3, 3.6, 3.9, 4.0, 4.1, 4.2, 4.2, 4.2],
+                            borderColor: '#FF6B6B',
+                            borderWidth: 2,
+                            fill: false,
+                            tension: 0.4,
+                            pointRadius: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            x: { display: false },
+                            y: { display: false, min: 0, max: 5 }
+                        }
+                    }
+                });
+            }
+            
+            // Savings Sparkline
+            const savingsCtx = document.getElementById('savingsSparkline');
+            if (savingsCtx) {
+                new Chart(savingsCtx, {
+                    type: 'line',
+                    data: {
+                        labels: Array(20).fill(''),
+                        datasets: [{
+                            data: [0.3, 0.35, 0.4, 0.42, 0.48, 0.52, 0.58, 0.64, 0.7, 0.76, 0.82, 0.88, 0.94, 1.0, 1.05, 1.1, 1.15, 1.18, 1.2, 1.2],
+                            borderColor: '#51CF66',
+                            borderWidth: 2,
+                            fill: false,
+                            tension: 0.4,
+                            pointRadius: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            x: { display: false },
+                            y: { display: false, min: 0, max: 1.5 }
+                        }
+                    }
+                });
+            }
+        }
+
+        function drawSupplierNetwork() {
+            const svg = document.getElementById('networkSVG');
+            if (!svg) return;
+            
+            const width = svg.clientWidth;
+            const height = 400;
+            svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+            
+            // Clear existing
+            svg.innerHTML = '';
+            
+            // Define tiers
+            const tiers = [
+                { name: 'Tier 3', y: 80, suppliers: [
+                    { name: 'Raw Materials Ltd', health: 88, x: width * 0.2 },
+                    { name: 'Metal Forge Co.', health: 92, x: width * 0.5 },
+                    { name: 'Alloy Specialists', health: 85, x: width * 0.8 }
+                ]},
+                { name: 'Tier 2', y: 180, suppliers: [
+                    { name: 'Component Mfg A', health: 78, x: width * 0.15 },
+                    { name: 'Assembly Systems', health: 82, x: width * 0.4 },
+                    { name: 'Parts Co.', health: 76, x: width * 0.65 },
+                    { name: 'SubSystem Inc.', health: 90, x: width * 0.85 }
+                ]},
+                { name: 'Tier 1', y: 280, suppliers: [
+                    { name: 'ValveTech Inc.', health: 62, x: width * 0.25, critical: true },
+                    { name: 'PrecisionBear Co.', health: 88, x: width * 0.5 },
+                    { name: 'AdvMatSystems', health: 94, x: width * 0.75 }
+                ]},
+                { name: 'Blue Origin', y: 360, suppliers: [
+                    { name: 'Blue Origin', health: 100, x: width * 0.5, isBlue: true }
+                ]}
+            ];
+            
+            // Draw connections first
+            const connections = [
+                // Tier 3 to Tier 2
+                [0, 0, 1, 0], [0, 0, 1, 1], [0, 1, 1, 1], [0, 1, 1, 2],
+                [0, 2, 1, 2], [0, 2, 1, 3],
+                // Tier 2 to Tier 1
+                [1, 0, 2, 0], [1, 1, 2, 0], [1, 1, 2, 1],
+                [1, 2, 2, 1], [1, 2, 2, 2], [1, 3, 2, 2],
+                // Tier 1 to Blue Origin
+                [2, 0, 3, 0], [2, 1, 3, 0], [2, 2, 3, 0]
+            ];
+            
+            connections.forEach(([t1, s1, t2, s2]) => {
+                const from = tiers[t1].suppliers[s1];
+                const to = tiers[t2].suppliers[s2];
+                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line.setAttribute('x1', from.x);
+                line.setAttribute('y1', tiers[t1].y);
+                line.setAttribute('x2', to.x);
+                line.setAttribute('y2', tiers[t2].y);
+                line.setAttribute('stroke', 'rgba(0, 212, 255, 0.2)');
+                line.setAttribute('stroke-width', '1');
+                line.classList.add('supply-connection');
+                svg.appendChild(line);
+            });
+            
+            // Draw nodes
+            tiers.forEach((tier, tierIndex) => {
+                tier.suppliers.forEach((supplier, supplierIndex) => {
+                    const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+                    g.setAttribute('class', 'supplier-node');
+                    g.setAttribute('data-tier', tierIndex);
+                    g.setAttribute('data-supplier', supplierIndex);
+                    
+                    // Node circle
+                    const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                    circle.setAttribute('cx', supplier.x);
+                    circle.setAttribute('cy', tier.y);
+                    circle.setAttribute('r', supplier.isBlue ? '16' : '12');
+                    
+                    let fillColor, strokeColor;
+                    if (supplier.isBlue) {
+                        fillColor = 'rgba(0, 212, 255, 0.3)';
+                        strokeColor = '#00D4FF';
+                    } else if (supplier.health >= 75) {
+                        fillColor = 'rgba(81, 207, 102, 0.2)';
+                        strokeColor = '#51CF66';
+                    } else if (supplier.health >= 50) {
+                        fillColor = 'rgba(255, 146, 43, 0.2)';
+                        strokeColor = '#FF922B';
+                    } else {
+                        fillColor = 'rgba(255, 107, 107, 0.2)';
+                        strokeColor = '#FF6B6B';
+                    }
+                    
+                    circle.setAttribute('fill', fillColor);
+                    circle.setAttribute('stroke', strokeColor);
+                    circle.setAttribute('stroke-width', supplier.critical ? '3' : '2');
+                    g.appendChild(circle);
+                    
+                    // Label
+                    const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                    text.setAttribute('x', supplier.x);
+                    text.setAttribute('y', tier.y - (supplier.isBlue ? 24 : 20));
+                    text.setAttribute('text-anchor', 'middle');
+                    text.setAttribute('fill', '#fff');
+                    text.setAttribute('font-size', '11');
+                    text.setAttribute('font-weight', '600');
+                    text.textContent = supplier.name;
+                    g.appendChild(text);
+                    
+                    // Health score
+                    if (!supplier.isBlue) {
+                        const healthText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                        healthText.setAttribute('x', supplier.x);
+                        healthText.setAttribute('y', tier.y + 4);
+                        healthText.setAttribute('text-anchor', 'middle');
+                        healthText.setAttribute('fill', strokeColor);
+                        healthText.setAttribute('font-size', '10');
+                        healthText.setAttribute('font-weight', '700');
+                        healthText.textContent = supplier.health;
+                        g.appendChild(healthText);
+                    }
+                    
+                    svg.appendChild(g);
+                });
+            });
+        }
+
+        function triggerCascadeFailure() {
+            if (cascadeRunning) return;
+            cascadeRunning = true;
+            
+            const svg = document.getElementById('networkSVG');
+            const nodes = svg.querySelectorAll('.supplier-node');
+            const connections = svg.querySelectorAll('.supply-connection');
+            
+            // Phase 1: Tier 3 failure (Raw Materials Ltd - tier 0, supplier 0)
+            setTimeout(() => {
+                const node = nodes[0];
+                const circle = node.querySelector('circle');
+                circle.setAttribute('fill', 'rgba(255, 107, 107, 0.3)');
+                circle.setAttribute('stroke', '#FF6B6B');
+                circle.setAttribute('stroke-width', '3');
+            }, 500);
+            
+            // Phase 2: Cascade to Tier 2
+            setTimeout(() => {
+                [3, 4].forEach(idx => {
+                    const node = nodes[idx];
+                    const circle = node.querySelector('circle');
+                    circle.setAttribute('fill', 'rgba(255, 146, 43, 0.3)');
+                    circle.setAttribute('stroke', '#FF922B');
+                });
+                
+                // Highlight affected connections
+                [0, 1].forEach(idx => {
+                    connections[idx].setAttribute('stroke', '#FF6B6B');
+                    connections[idx].setAttribute('stroke-width', '2');
+                    connections[idx].classList.add('disrupted');
+                });
+            }, 1500);
+            
+            // Phase 3: Cascade to Tier 1
+            setTimeout(() => {
+                const node = nodes[7]; // ValveTech
+                const circle = node.querySelector('circle');
+                circle.setAttribute('fill', 'rgba(255, 107, 107, 0.4)');
+                circle.setAttribute('stroke', '#FF6B6B');
+                circle.setAttribute('stroke-width', '4');
+            }, 2500);
+            
+            // Phase 4: Impact Blue Origin
+            setTimeout(() => {
+                const node = nodes[10]; // Blue Origin
+                const circle = node.querySelector('circle');
+                circle.setAttribute('stroke', '#FF922B');
+                circle.setAttribute('stroke-width', '3');
+                
+                cascadeRunning = false;
+                
+                // Reset after 5 seconds
+                setTimeout(() => {
+                    drawSupplierNetwork();
+                }, 5000);
+            }, 3500);
+        }
+
+        function initPartsHeatmap() {
+            const ctx = document.getElementById('partsHeatmap');
+            if (!ctx) return;
+            
+            new Chart(ctx, {
+                type: 'bubble',
+                data: {
+                    datasets: [{
+                        label: 'Critical Parts',
+                        data: [
+                            { x: 18, y: 93, r: 12, label: 'Main Valve Assembly' },
+                            { x: 12, y: 71, r: 10, label: 'Composite Panel' },
+                            { x: 8, y: 68, r: 9, label: 'Turbopump Bearing' },
+                            { x: 6, y: 58, r: 7, label: 'Pressure Sensor' },
+                            { x: 4, y: 54, r: 6, label: 'Wiring Harness' },
+                            { x: 14, y: 48, r: 8, label: 'Fastener Kit' },
+                            { x: 10, y: 42, r: 7, label: 'Seal Assembly' },
+                            { x: 7, y: 36, r: 6, label: 'Bracket Set' }
+                        ],
+                        backgroundColor: function(context) {
+                            const value = context.raw.y;
+                            if (value >= 75) return 'rgba(255, 107, 107, 0.6)';
+                            if (value >= 50) return 'rgba(255, 146, 43, 0.6)';
+                            return 'rgba(0, 212, 255, 0.4)';
+                        },
+                        borderColor: function(context) {
+                            const value = context.raw.y;
+                            if (value >= 75) return '#FF6B6B';
+                            if (value >= 50) return '#FF922B';
+                            return '#00D4FF';
+                        },
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.raw.label}: Risk ${context.raw.y}, Lead ${context.raw.x}w`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: { display: false },
+                            min: 0,
+                            max: 20,
+                            ticks: { color: '#888' },
+                            grid: { color: 'rgba(255,255,255,0.05)' }
+                        },
+                        y: {
+                            title: { display: false },
+                            min: 0,
+                            max: 100,
+                            ticks: { color: '#888' },
+                            grid: { color: 'rgba(255,255,255,0.05)' }
+                        }
+                    }
+                }
+            });
+        }
+
+        function initLeadTimeForecast() {
+            const ctx = document.getElementById('leadTimeForecast');
+            if (!ctx) return;
+            
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5', 'Week 6', 'Week 7', 'Week 8'],
+                    datasets: [
+                        {
+                            label: 'Actual Delay',
+                            data: [0, 0.8, 1.5, 2.3, 3.1, 3.8, 4.2, 4.2],
+                            borderColor: '#FF922B',
+                            backgroundColor: 'rgba(255, 146, 43, 0.1)',
+                            borderWidth: 3,
+                            tension: 0.4,
+                            fill: true
+                        },
+                        {
+                            label: 'AI Forecast',
+                            data: [4.2, 4.6, 5.1, 5.6, 6.0, 6.2, 5.9, 5.4],
+                            borderColor: '#00D4FF',
+                            backgroundColor: 'transparent',
+                            borderWidth: 2,
+                            borderDash: [5, 5],
+                            tension: 0.4,
+                            fill: false
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                            labels: { color: '#ccc', font: { size: 11 } }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            title: { display: true, text: 'Delay (weeks)', color: '#888' },
+                            min: 0,
+                            max: 7,
+                            ticks: { color: '#888' },
+                            grid: { color: 'rgba(255,255,255,0.05)' }
+                        },
+                        x: {
+                            ticks: { color: '#888' },
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+        }
+
+        function animateDashboardMetrics() {
+            // Metrics animation placeholder
+        }
+
+        // --- OPTION 3: MISSION CONTROL INSPECTION ---
+        let inspectionActive = false;
+
+        function startMissionControlInspection() {
+            if (inspectionActive) return;
+            inspectionActive = true;
+            
+            const statusBadge = document.getElementById('analysisStatusBadge');
+            const statusText = document.getElementById('statusBadgeText');
+            const progressFill = document.getElementById('scanProgressFill');
+            const scanPercent = document.getElementById('scanPercent');
+            const dataPoints = document.getElementById('dataPoints');
+            const defectFeed = document.getElementById('defectFeedContent');
+            
+            // Clear feed
+            if (defectFeed) defectFeed.innerHTML = '';
+            
+            // Phase 0: Initialize (0.5s)
+            setTimeout(() => {
+                if (statusText) statusText.textContent = 'INITIALIZING...';
+                if (statusBadge) statusBadge.classList.add('scanning');
+                
+                // Start scan beam
+                const scanBeam = document.getElementById('scanBeamH');
+                if (scanBeam) {
+                    scanBeam.style.opacity = '1';
+                    scanBeam.style.animation = 'horizontalScan 4s ease-in-out';
+                }
+                
+                // Activate Scan Line
+                const container = document.querySelector('.scan-viewport');
+                if(container) container.classList.add('scan-active');
+                
+                // Animate progress
+                let progress = 0;
+                const progressInterval = setInterval(() => {
+                    if (progress <= 100) {
+                        if (progressFill) progressFill.style.width = progress + '%';
+                        if (scanPercent) scanPercent.textContent = progress + '%';
+                        progress += 2.5;
+                    } else {
+                        clearInterval(progressInterval);
+                    }
+                }, 100);
+                
+                // Animate data points
+                if (dataPoints) animateCounter(dataPoints, 1247892, 4000, 0, '');
+            }, 500);
+            
+            // Phase 1: Heat Shield (1.5-3s)
+            setTimeout(() => {
+                if (statusText) statusText.textContent = 'SCANNING: HEAT SHIELD';
+                const zone = document.getElementById('zone-heat-shield');
+                if (zone) zone.classList.add('scanning');
+                updateZoneStatus('heat-shield', 'scanning', 'Analyzing...');
+            }, 1500);
+            
+            setTimeout(() => {
+                const zone = document.getElementById('zone-heat-shield');
+                if (zone) {
+                    zone.classList.remove('scanning');
+                    zone.classList.add('warning');
+                }
+                // Show defect marker
+                const marker = zone ? zone.querySelector('.defect-marker') : null;
+                if (marker) marker.style.opacity = '1';
+                
+                updateZoneStatus('heat-shield', 'warning', 'WARNING: 0.8mm deviation');
+                addDefectFeedItem('warning', '⚠', 'Heat Shield Displacement', 'Thermal tile displacement: 0.8mm (within tolerance ≤1.0mm). Manual verification recommended.', '08:42:15 UTC');
+                
+                document.getElementById('defectsFound').textContent = '1';
+                document.getElementById('maxDeviationDash').textContent = '0.8';
+                document.getElementById('zonesCompleted').textContent = '1 / 4 Complete';
+            }, 3000);
+            
+            // Phase 2: Fuel Tank (3.5-5s)
+            setTimeout(() => {
+                if (statusText) statusText.textContent = 'SCANNING: FUEL TANK';
+                const zone = document.getElementById('zone-fuel-tank');
+                if (zone) zone.classList.add('scanning');
+                updateZoneStatus('fuel-tank', 'scanning', 'Analyzing...');
+            }, 3500);
+            
+            setTimeout(() => {
+                const zone = document.getElementById('zone-fuel-tank');
+                if (zone) {
+                    zone.classList.remove('scanning');
+                    zone.classList.add('passed');
+                }
+                updateZoneStatus('fuel-tank', 'passed', 'PASS: 0.02mm deviation');
+                addDefectFeedItem('passed', '✓', 'Fuel Tank Integrity', 'All measurements within specification. Deviation: 0.02mm. No defects detected.', '08:42:18 UTC');
+                document.getElementById('zonesCompleted').textContent = '2 / 4 Complete';
+            }, 5000);
+            
+            // Phase 3: Avionics (5.5-7s)
+            setTimeout(() => {
+                if (statusText) statusText.textContent = 'SCANNING: AVIONICS BAY';
+                const zone = document.getElementById('zone-avionics');
+                if (zone) zone.classList.add('scanning');
+                updateZoneStatus('avionics', 'scanning', 'Analyzing...');
+            }, 5500);
+            
+            setTimeout(() => {
+                const zone = document.getElementById('zone-avionics');
+                if (zone) {
+                    zone.classList.remove('scanning');
+                    zone.classList.add('passed');
+                }
+                updateZoneStatus('avionics', 'passed', 'PASS: 0.03mm deviation');
+                addDefectFeedItem('passed', '✓', 'Avionics Bay Verified', 'Structural integrity confirmed. All electronic housings secure. Deviation: 0.03mm.', '08:42:21 UTC');
+                document.getElementById('zonesCompleted').textContent = '3 / 4 Complete';
+            }, 7000);
+            
+            // Phase 4: Engine Mount (7.5-9.5s)
+            setTimeout(() => {
+                if (statusText) statusText.textContent = 'SCANNING: ENGINE MOUNT';
+                const zone = document.getElementById('zone-engine-mount');
+                if (zone) zone.classList.add('scanning');
+                updateZoneStatus('engine-mount', 'scanning', 'Analyzing...');
+            }, 7500);
+            
+            setTimeout(() => {
+                const zone = document.getElementById('zone-engine-mount');
+                if (zone) {
+                    zone.classList.remove('scanning');
+                    zone.classList.add('failed');
+                }
+                // Show critical defect marker
+                const marker = zone ? zone.querySelector('.defect-marker.critical') : null;
+                if (marker) marker.style.opacity = '1';
+                
+                updateZoneStatus('engine-mount', 'failed', 'FAIL: 1.4mm deviation');
+                addDefectFeedItem('critical', '✕', 'CRITICAL: Micro-Fracture Detected', 'Engine mount thrust attachment point shows 1.4mm deviation (exceeds 1.0mm tolerance). Ultrasonic scan confirms internal crack propagation.', '08:42:24 UTC');
+                
+                document.getElementById('defectsFound').textContent = '2';
+                const maxDev = document.getElementById('maxDeviationDash');
+                if(maxDev) {
+                    maxDev.textContent = '1.4';
+                    maxDev.classList.add('danger');
+                }
+                document.getElementById('zonesCompleted').textContent = '4 / 4 Complete';
+                document.getElementById('confidenceDash').textContent = '91.3%';
+            }, 9500);
+            
+            // Phase 5: Complete (10.5s)
+            setTimeout(() => {
+                if (statusText) statusText.textContent = 'ANALYSIS COMPLETE';
+                if (statusBadge) {
+                    statusBadge.classList.remove('scanning');
+                    statusBadge.classList.add('complete');
+                }
+                
+                // Stop scan line
+                const container = document.querySelector('.scan-viewport');
+                if(container) container.classList.remove('scan-active');
+                
+                const verdictContent = document.getElementById('verdictContent');
+                if (verdictContent) {
+                    verdictContent.innerHTML = `
+                        <div class="verdict-text">
+                            <strong>VERDICT: VEHICLE NOT CLEARED FOR IMMEDIATE REUSE</strong><br><br>
+                            Engine Mount requires structural repair before next flight. Estimated downtime: 48-72 hours for micro-fracture remediation at Station 360.<br><br>
+                            Heat Shield flagged for secondary manual inspection to verify thermal tile positioning.<br><br>
+                            <strong>Recommendation:</strong> Ground vehicle pending repair. Schedule follow-up ultrasonic scan after structural repairs complete.
+                        </div>
+                    `;
+                }
+                
+                setTimeout(() => {
+                    inspectionActive = false;
+                }, 10000);
+            }, 10500);
+        }
+
+        function updateZoneStatus(zone, status, detail) {
+            const statusItem = document.getElementById(`status-${zone}`);
+            if (!statusItem) return;
+            
+            const indicator = statusItem.querySelector('.zone-status-indicator');
+            const detailSpan = statusItem.querySelector('.zone-detail');
+            
+            if(indicator) indicator.className = `zone-status-indicator ${status}`;
+            if (detailSpan) detailSpan.textContent = detail;
+        }
+
+        function addDefectFeedItem(type, icon, title, description, timestamp) {
+            const feed = document.getElementById('defectFeedContent');
+            if (!feed) return;
+            
+            const placeholder = feed.querySelector('.feed-placeholder');
+            if (placeholder) placeholder.remove();
+            
+            const item = document.createElement('div');
+            item.className = `defect-feed-item ${type}`;
+            item.innerHTML = `
+                <div class="feed-icon">${icon}</div>
+                <div class="feed-details">
+                    <div class="feed-title">${title}</div>
+                    <div class="feed-description">${description}</div>
+                    <div class="feed-timestamp">${timestamp}</div>
+                </div>
+            `;
+            feed.appendChild(item);
+            feed.scrollTop = feed.scrollHeight;
+        }
+
+        function setSensorMode(mode) {
+            document.querySelectorAll('.mode-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            const activeBtn = document.querySelector(`[data-mode="${mode}"]`);
+            if(activeBtn) activeBtn.classList.add('active');
+            
+            // Update rocket styles based on mode
+            const rocketSVG = document.getElementById('rocketSVG');
+            const viewport = document.querySelector('.scan-viewport');
+            
+            if(rocketSVG) {
+                // Remove old mode classes
+                rocketSVG.classList.remove('mode-visual', 'mode-thermal', 'mode-ultrasonic');
+                rocketSVG.classList.add(`mode-${mode}`);
+            }
+            
+            if(viewport) {
+                viewport.classList.remove('mode-visual', 'mode-thermal', 'mode-ultrasonic');
+                viewport.classList.add(`mode-${mode}`);
+            }
+        }
+
+        // --- 5. GENERATIVE AI ANIMATION ---
+        let genAIActive = false;
+
+        function startGenerativeSequence() {
+            if (genAIActive) return;
+            genAIActive = true;
+
+            const statusText = document.getElementById('genStatusText');
+            const designA = document.getElementById('designA');
+            const designB = document.getElementById('designB');
+            const designC = document.getElementById('designC');
+            const reasoning = document.getElementById('aiReasoning');
+
+            // Phase 1: Processing (0.5s)
+            setTimeout(() => {
+                if(statusText) statusText.textContent = 'GENERATING DESIGNS...';
+            }, 500);
+
+            // Phase 2: Design A appears (1.5s)
+            setTimeout(() => {
+                if(designA) {
+                    designA.classList.add('active');
+                    const svgA = designA.querySelector('.component-svg');
+                    if(svgA) svgA.classList.add('visible');
+                    
+                    // Animate heat points
+                    setTimeout(() => {
+                        designA.querySelectorAll('.heat-point').forEach(point => {
+                            point.classList.add('active');
+                        });
+                    }, 800);
+
+                    // Populate metrics A
+                    setTimeout(() => {
+                        animateCounter(document.getElementById('massA'), 52, 800, 1, ' kg');
+                        animateCounter(document.getElementById('emiA'), 0.02, 800, 3, '%');
+                        document.getElementById('costA').textContent = 'HIGH';
+                        document.getElementById('cyclesA').textContent = '45+';
+                    }, 1000);
+                }
+            }, 1500);
+
+            // Phase 3: Design B appears (2.5s)
+            setTimeout(() => {
+                if(designB) {
+                    designB.classList.add('active');
+                    const svgB = designB.querySelector('.component-svg');
+                    if(svgB) svgB.classList.add('visible');
+                    
+                    setTimeout(() => {
+                        designB.querySelectorAll('.heat-point').forEach(point => {
+                            point.classList.add('active');
+                        });
+                    }, 800);
+
+                    // Populate metrics B
+                    setTimeout(() => {
+                        animateCounter(document.getElementById('massB'), 43, 800, 1, ' kg');
+                        animateCounter(document.getElementById('emiB'), 0.008, 800, 3, '%');
+                        document.getElementById('costB').textContent = 'MEDIUM';
+                        document.getElementById('cyclesB').textContent = '35+';
+                    }, 1000);
+                }
+            }, 2500);
+
+            // Phase 4: Design C appears (3.5s)
+            setTimeout(() => {
+                if(designC) {
+                    designC.classList.add('active');
+                    const svgC = designC.querySelector('.component-svg');
+                    if(svgC) svgC.classList.add('visible');
+                    
+                    setTimeout(() => {
+                        designC.querySelectorAll('.heat-point').forEach(point => {
+                            point.classList.add('active');
+                        });
+                    }, 800);
+
+                    // Populate metrics C
+                    setTimeout(() => {
+                        animateCounter(document.getElementById('massC'), 41, 800, 1, ' kg');
+                        animateCounter(document.getElementById('emiC'), 0.009, 800, 3, '%');
+                        document.getElementById('costC').textContent = 'LOW';
+                        document.getElementById('cyclesC').textContent = '18';
+                    }, 1000);
+                }
+            }, 3500);
+
+            // Phase 5: Analysis complete (5s)
+            setTimeout(() => {
+                if(statusText) {
+                    statusText.textContent = 'ANALYSIS COMPLETE';
+                    statusText.parentElement.style.borderColor = 'var(--status-success)';
+                    statusText.parentElement.style.backgroundColor = 'rgba(81, 207, 102, 0.1)';
+                    statusText.style.color = 'var(--status-success)';
+                }
+                
+                // Highlight winner
+                if(designB) designB.classList.add('winner');
+                const recBadge = document.getElementById('recBadge');
+                if(recBadge) recBadge.classList.add('show');
+                
+                // Show reasoning
+                if(reasoning) reasoning.classList.add('show');
+                const reasoningText = document.getElementById('reasoningText');
+                if(reasoningText) reasoningText.innerHTML = '<strong>Design B selected</strong> as optimal solution. Achieves 30+ flight cycle requirement while maintaining EMI tolerance under 0.01%. Mass reduction of 15% compared to Design A enables cost savings without compromising structural integrity. Honeycomb geometry distributes thermal loads evenly, preventing stress concentrations that limited Design C to 18 cycles. <strong>Recommendation: Proceed to high-fidelity CFD validation.</strong>';
+                
+                // Reset after 10s
+                setTimeout(() => {
+                    genAIActive = false;
+                }, 10000);
+            }, 5000);
+        }
+
+        function animateCounter(element, target, duration, decimals, suffix = '', isTime = false) {
+            if(!element) return;
+            const start = 0;
+            const startTime = performance.now();
+            
+            function update(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                const current = progress * target;
+                const value = decimals > 0 ? current.toFixed(decimals) : Math.floor(current);
+                element.textContent = isTime ? value + suffix : value + suffix;
+                if (progress < 1) requestAnimationFrame(update);
+            }
+            requestAnimationFrame(update);
+        }
+
+        // --- 4. TAB LOGIC ---
+        window.switchTab = function(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-button').forEach(el => el.classList.remove('active'));
+            
+            const targetContent = document.getElementById(tabId);
+            if(targetContent) targetContent.classList.add('active');
+            
+            const btn = document.querySelector(`button[onclick="switchTab('${tabId}')"]`);
+            if(btn) btn.classList.add('active');
+            
+            window.scrollTo({top: 0, behavior: 'smooth'});
+            
+            if(tabId === 'option1') setTimeout(startUnifiedSearch, 500);
+            if(tabId === 'option2') setTimeout(initSupplyChainDashboard, 100);
+            if(tabId === 'option3') setTimeout(startMissionControlInspection, 500);
+            if(tabId === 'option4') setTimeout(startGenerativeSequence, 500);
+        };
+
+        document.addEventListener('DOMContentLoaded', initThreeJS);
+    </script>
+</body>
+</html>
